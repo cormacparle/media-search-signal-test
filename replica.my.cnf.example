@@ -1,0 +1,12 @@
+[db]
+host = 
+user = 
+password =
+dbname = fulltextSearchResults
+
+[search]
+baseUrl = http://commons.wikimedia.org
+searchTermsFile = searchTerms/searchTerms.csv
+
+[log]
+getImages = logs/GetImagesForClassification.log
