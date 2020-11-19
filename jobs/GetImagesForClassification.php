@@ -25,8 +25,8 @@ class GetImagesForClassification {
     private $log;
 
     public function __construct( array $config ) {
-        $this->db = new mysqli( $config['db']['host'], $config['db']['user'],
-            $config['db']['password'], $config['db']['dbname'] );
+        $this->db = new mysqli( $config['db']['host'], $config['client']['user'],
+            $config['client']['password'], $config['db']['dbname'] );
         if ( $this->db->connect_error ) {
             die('DB connection Error (' . $this->db->connect_errno . ') '
                 . $this->db->connect_error);
@@ -72,7 +72,13 @@ class GetImagesForClassification {
 
     private function search( string $searchTerm, string $component ) : array {
         curl_setopt( $this->ch, CURLOPT_URL, $this->getSearchUrl( $searchTerm, $component ) );
-        return json_decode( curl_exec( $this->ch ), true );
+        $result = curl_exec( $this->ch );
+        if ( curl_errno( $this->ch ) ) {
+            $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
+            die( 'Exiting because of curl error, see log for details.' );
+        }
+        $array = json_decode( $result, true );
+        return $array;
     }
 
     private function getSearchUrl( string $searchTerm, string $component ) : string {
@@ -145,7 +151,12 @@ class GetImagesForClassification {
                 $this->ch,
                 CURLOPT_URL,
                 sprintf( $apiEndpoint, urlencode( implode( '|', $titlesSlice ) ) ) );
-            $result = json_decode( curl_exec( $this->ch ), true );
+            $jsonResult = curl_exec( $this->ch );
+            if ( curl_errno( $this->ch ) ) {
+                $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
+                die( 'Exiting because of curl error, see log for details.' );
+            }
+            $result = json_decode( $jsonResult, true );
 
             $titleMap = [];
             if ( isset( $result['query']['normalized'] ) ) {
@@ -190,6 +201,9 @@ class GetImagesForClassification {
     }
 }
 
-$config = parse_ini_file( __DIR__ . '/../replica.my.cnf', true );
+$config = array_merge(
+    parse_ini_file( __DIR__ . '/../config.ini', true ),
+    parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+);
 $job = new GetImagesForClassification( $config );
 $job->run();

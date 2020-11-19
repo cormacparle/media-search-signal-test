@@ -1,7 +1,10 @@
 <?php
-$config = parse_ini_file( __DIR__ . '/../replica.my.cnf', true );
-$mysqli = new mysqli( $config['db']['host'], $config['db']['user'],
-    $config['db']['password'], $config['db']['dbname'] );
+$config = array_merge(
+    parse_ini_file( __DIR__ . '/../config.ini', true ),
+    parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+);
+$mysqli = new mysqli( $config['db']['host'], $config['client']['user'],
+    $config['client']['password'], $config['db']['dbname'] );
 if ( $mysqli->connect_error ) {
     die('Connect Error (' . $mysqli->connect_errno . ') '
             . $mysqli->connect_error);
