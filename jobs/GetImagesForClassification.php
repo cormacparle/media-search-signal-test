@@ -178,7 +178,7 @@ class GetImagesForClassification {
     }
 
     private function getImageUrl( string $title, array $metadata ) : string {
-        if ( $metadata[$title]['url'] !== '' ) {
+        if ( !empty( $metadata[$title]['url'] ) ) {
             return $this->getThumbnail( $metadata[$title]['url'] );
         }
         return 'https://commons.wikimedia.org/wiki/' . $title;
