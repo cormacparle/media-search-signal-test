@@ -84,7 +84,7 @@ class GetImagesForClassification {
     private function getSearchUrl( string $searchTerm, string $component ) : string {
         return sprintf(
             $this->searchUrl . '/w/index.php?search=%s+filetype:bitmap&ns6=1&' .
-            'cirrusDumpResult&mediasearch=1&limit=100%s',
+            'cirrusDumpResult&mediasearch=1&limit=100&normalizeFulltextScores=0%s',
             urlencode( $searchTerm ),
             $this->getBoostQueryParams( $component )
         );
