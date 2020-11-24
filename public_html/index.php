@@ -28,12 +28,7 @@ $result = $mysqli->query( 'select id,term,file_page,image_url from results_by_co
 
 <h1>Search for &quot;<?=$result->term?>&quot;</h1>
 
-<p><img src="<?=$result->image_url?>" /></p>
-<ul>
-	<li><a href="https://commons.wikimedia.org/wiki/<?=$result->file_page?>" target="_blank">File page on commons</a></li>
-	<li><a href="https://www.google.com/search?tbm=isch&as_q=<?=urlencode( $result->term )?>"
-           target="_blank">Google image search</a></li>
-</ul>
+<p>Help us understand what drives good images search results by evaluating whether the image below is a good match for the term &quot;<?=$result->term?>&quot;.</p>
 
 <p>Is this is a good match for the search term &quot;<?=$result->term?>&quot;?</p>
 
@@ -42,6 +37,15 @@ $result = $mysqli->query( 'select id,term,file_page,image_url from results_by_co
   <li><a href="/?id=<?=$result->id?>&rating=0">Meh</a></li>
   <li><a href="/?id=<?=$result->id?>&rating=-1">No</a></li>
   <li><a href="/?id=<?=$result->id?>&skip=1">Dunno</a></li>
+</ul>
+
+<p><img src="<?=$result->image_url?>" onerror="window.location.reload()" /></p>
+
+<p>Not sure what to even expect for &quot;<?=$result->term?>&quot;? Maybe check out:</p>
+<ul>
+	<li><a href="https://commons.wikimedia.org/wiki/<?=$result->file_page?>" target="_blank">This file on Wikimedia Commons</a></li>
+	<li><a href="https://www.google.com/search?tbm=isch&as_q=<?=urlencode( $result->term )?>"
+           target="_blank">Google image search for &quot;<?=$result->term?>&quot;</a></li>
 </ul>
 
 </body>
