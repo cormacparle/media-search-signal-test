@@ -11,21 +11,23 @@ if ( $mysqli->connect_error ) {
 	    . $mysqli->connect_error);
 }
 
-if ( !isset( $_GET['id'] ) && $_GET['id'] ) {
+if ( !isset( $_POST['id'] ) && $_POST['id'] ) {
 	throw new Exception( 'Missing id' );
 }
 
-if ( isset( $_GET['skip'] ) && $_GET['skip'] ) {
+if ( isset( $_POST['skip'] ) && $_POST['skip'] ) {
+    echo "skipped image " . intval( $_POST['id'] ) . "\n";
 	$mysqli->query(
 		'update results_by_component 
 		set skipped=1
-		where id=' . intval( $_GET['id'] )
+		where id=' . intval( $_POST['id'] )
 	);
 } else {
+    echo "rated image " . intval( $_POST['id'] ) . " with " . intval( $_POST['rating'] ) . "\n";
 	$mysqli->query(
 		'update results_by_component 
-		set rating='. intval( $_GET['rating'] ) .'
-		where id=' . intval( $_GET['id'] )
+		set rating='. intval( $_POST['rating'] ) .'
+		where id=' . intval( $_POST['id'] )
 	);
 }
 

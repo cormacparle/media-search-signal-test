@@ -12,7 +12,7 @@ if ( $mysqli->connect_error ) {
 }
 
 $maxId = $mysqli->query(
-	'select max(id)
+	'select max(id) as id
 	from results_by_component'
 );
 if ( $maxId === false ) {
@@ -23,8 +23,8 @@ $maxId = intval( $maxId->fetch_assoc()['id'] );
 $result = $mysqli->query(
 	'select id, term, file_page, image_url
 	from results_by_component
-	where rating is null and skipped=0 and id >= '. $maxId .'
-	limit 1'
+	where rating is null and skipped=0 and id >= '. rand( 0, $maxId ) .'
+	order by id limit 1'
 );
 
 $mysqli->close();
