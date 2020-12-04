@@ -1,0 +1,167 @@
+<html>
+<head>
+    <title>Image relevance classifier</title>
+    <style>
+        .term {
+            font-weight: bold;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .column {
+            flex: 1;
+        }
+        .column:first-child {
+            max-width: 600px;
+            margin-right: 50px;
+        }
+        .iframecontainer {
+            overflow: hidden;
+        }
+        h2 > a {
+            color: #000;
+        }
+        iframe {
+            margin-top: -220px;
+            height: 870px;
+            width: 100%;
+            min-width: 500px;
+        }
+        img {
+            max-height: 600px;
+            max-width: 600px;
+        }
+        .button {
+            border: 1px solid #374151;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .positive {
+            background-color: #6EE7B7;
+        }
+        .semi {
+            background-color: #FCD34D;
+        }
+        .negative {
+            background-color: #FCA5A5;
+        }
+        .neutral {
+            background-color: #D1D5DB;
+        }
+    </style>
+    <template>
+        <h1>Search for &quot;<span class="term"></span>&quot;</h1>
+        <p>Help us understand what drives good image search results by evaluating whether the image below is a good match for the term &quot;<span class="term"></span>&quot;.</p>
+        <h2>
+            <a class="commons_url file_page" href="https://commons.wikimedia.org/wiki/<?=$result->file_page?>" target="_blank"></a></li>
+        </h2>
+
+        <div class="container">
+            <div class="column">
+                <p>Is this is a good match for the search term &quot;<span class="term"></span>&quot;?</p>
+
+                <p>
+                    <button class="button positive" name="rating" value="1">Yes</button>
+                    <button class="button semi" name="rating" value="0">Meh</button>
+                    <button class="button negative" name="rating" value="-1">No</button>
+                    <button class="button neutral" name="skip" value="1">Dunno</button>
+                </p>
+
+                <p>
+                    <img class="image_url" />
+                </p>
+
+            </div>
+            <div class="column">
+                <p>Not sure what to even expect for &quot;<span class="term"></span>&quot;? This is what Bing thinks are good matches:</p>
+                <div class="iframecontainer">
+                    <iframe class="bing_url"></iframe>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        async function fetchImage() {
+            var request = new Request( 'fetch.php', { method: 'GET' } );
+            var response = await window.fetch( request );
+            var data = await response.json();
+
+            // a lot of images fail to load (no thumb available -> thumb generation throttled)
+            // return current image's response if we manage to decode the image; else fetch another
+            const img = new Image();
+            img.src = data.image_url;
+            return img.decode().then( () => data ).catch( () => fetchImage() );
+        }
+        async function submitImage( id, rating ) {
+            var formData = new FormData();
+            formData.append( 'id', id );
+            formData.append( 'rating', rating );
+            var request = new Request( 'submit.php', { method: 'POST', body: formData } );
+            return window.fetch( request );
+        }
+        async function skipImage( id ) {
+            var formData = new FormData();
+            formData.append( 'id', id );
+            formData.append( 'skip', '1' );
+            var request = new Request( 'submit.php', { method: 'POST', body: formData } );
+            return window.fetch( request );
+        }
+        function populateTemplate( data ) {
+            var template = document.querySelector( 'template' );
+            var clone = template.content.cloneNode( true );
+
+            clone.querySelectorAll( '.term' ).forEach( node => node.textContent = data.term );
+            clone.querySelectorAll( '.image_url' ).forEach( node => node.src = data.image_url );
+
+            clone.querySelectorAll( '.bing_url' ).forEach( node => node.src = 'https://www.bing.com/images/search?form=HDRSC2&q=' + encodeURI( data.term ) );
+            clone.querySelectorAll( '.commons_url' ).forEach( node => node.href = 'https://commons.wikimedia.org/wiki/' + data.file_page );
+            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.file_page ) );
+
+            return clone;
+        }
+        async function render( data ) {
+            // pre-fetch next image
+            var next = fetchImage();
+
+            // render current image
+            var template = populateTemplate( data );
+
+            // bind event handlers
+            template.querySelectorAll( '.button[name=rating]' ).forEach( node => node.addEventListener( 'click', e => {
+                submitImage( data.id, e.target.value );
+                while ( document.body.hasChildNodes() ) {
+                    // remove nodes from body to prevent double submit
+                    document.body.removeChild( document.body.childNodes[0] );
+                }
+                document.body.append( 'Loading...' );
+                next.then( render );
+            } ) );
+            template.querySelectorAll( '.button[name=skip]' ).forEach( node => node.addEventListener( 'click', () => {
+                skipImage( data.id );
+                while ( document.body.hasChildNodes() ) {
+                    // remove nodes from body to prevent double submit
+                    document.body.removeChild( document.body.childNodes[0] );
+                }
+                document.body.append( 'Loading...' );
+                next.then( render );
+            } ) );
+
+            // make sure to delay until <body> has been created
+            setTimeout( () => {
+                while ( document.body.hasChildNodes() ) {
+                    document.body.removeChild( document.body.childNodes[0] );
+                }
+                document.body.append( template );
+            } );
+        }
+
+        fetchImage().then( render );
+    </script>
+</head>
+<body>
+Loading...
+</body>
