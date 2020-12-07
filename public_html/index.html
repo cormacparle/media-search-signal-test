@@ -119,7 +119,7 @@
 
             clone.querySelectorAll( '.bing_url' ).forEach( node => node.src = 'https://www.bing.com/images/search?form=HDRSC2&q=' + encodeURI( data.term ) );
             clone.querySelectorAll( '.commons_url' ).forEach( node => node.href = 'https://commons.wikimedia.org/wiki/' + data.file_page );
-            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.file_page ) );
+            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.file_page ).replace( /_/g, ' ' ) );
 
             return clone;
         }
