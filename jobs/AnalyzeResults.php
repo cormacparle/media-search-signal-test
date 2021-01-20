@@ -93,9 +93,11 @@ $options = getopt( '', [ 'searchId:', 'description::' ] );
 if ( isset( $options['searchId'] ) ) {
     $searchId = $options['searchId'];
 } else {
-    include( __DIR__ . '/FindLabeledImagesInResults.php' );
-    $job = new FindLabeledImagesInResults( $config, $options['description'] ?? '' );
-    $searchId = $job->run();
+    $findLabeledImagesJob = function() {
+        include( __DIR__ . '/FindLabeledImagesInResults.php' );
+        return $searchId;
+    };
+    $searchId = $findLabeledImagesJob();
 }
 $job = new AnalyzeResults( $config, $searchId );
 $job->run();
