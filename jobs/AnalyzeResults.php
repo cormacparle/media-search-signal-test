@@ -41,17 +41,22 @@ class AnalyzeResults {
             "Term,f1Score\n"
         );
 
-        $f1Scores = [];
+        $f1Scores = $precisionTop30s = [];
         foreach ( $resultsets as $resultset ) {
             $f1Scores[$resultset['term']] = $this->calculateF1Score(
                 $resultset['id'], $resultset['term'] );
+            $precisionTop30s[$resultset['term']] = $this->calculatePrecisionTop30(
+                $resultset['id'], $resultset['term'] );
             fwrite( $this->out,
-                $resultset['term'] . "," . $f1Scores[$resultset['term']] . "\n" );
+                $resultset['term'] . "," .
+                $f1Scores[$resultset['term']] . "," .
+                $precisionTop30s[$resultset['term']] . "\n" );
         }
         fwrite(
             $this->out,
             "ARITHMETIC MEAN," .
-            array_sum( $f1Scores ) / count( $resultsets) .
+            array_sum( $f1Scores ) / count( $resultsets) . "," .
+            array_sum( $precisionTop30s ) / count( $resultsets) .
             "\n"
         );
     }
@@ -80,6 +85,35 @@ class AnalyzeResults {
         $recall = $foundGoodImageCount / $knownGoodImageCount;
 
         return 2 * ( ( $precision * $recall ) / ( $precision + $recall ) );
+    }
+
+    /**
+     * @param int $resultsetId
+     * @param string $searchTerm
+     * @return float
+     */
+    private function calculatePrecisionTop30( int $resultsetId, string $searchTerm ) : float {
+        $knownGoodImageCount = $this->db->query(
+            'select count(*) as count from results_by_component where ' .
+            'term = "' . $this->db->real_escape_string( trim( $searchTerm ) ) . '" and ' .
+            'rating=1 and position < 31'
+        )->fetch_object()->count;
+        $foundGoodImageCount = $this->db->query(
+            'select count(*) as count from labeledResult where ' .
+            'resultsetId = "' . intval( $resultsetId ) . '" and ' .
+            'rating=1'
+        )->fetch_object()->count;
+        if ( $foundGoodImageCount == 0 ) {
+            return 0;
+        }
+        $foundBadImageCount = $this->db->query(
+            'select count(*) as count from labeledResult where ' .
+            'resultsetId = "' . intval( $resultsetId ) . '" and ' .
+            'rating<1 and position < 31'
+        )->fetch_object()->count;
+
+        $precision = $foundGoodImageCount / ( $foundGoodImageCount + $foundBadImageCount );
+        return $precision;
     }
 }
 

@@ -51,7 +51,6 @@ class FindLabeledImagesInResults {
             $this->log( 'Searching ' . $searchTerm );
             $searchTerm = trim( $searchTerm );
             $this->processResults( $searchTerm, $this->search( $searchTerm ), $searchId );
-            break;
         }
         $this->log( 'End ' . $this->description );
         return $searchId;
