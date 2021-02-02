@@ -1,2 +1,4 @@
 .idea/
 replica.my.cnf
+vendor/
+.DS_Store
