@@ -117,7 +117,6 @@ class AnalyzeResults {
     }
 }
 
-$options = getopt('', [ 'description::', 'searchId::' ]);
 $config = array_merge(
     parse_ini_file( __DIR__ . '/../config.ini', true ),
     parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
