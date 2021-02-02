@@ -11,3 +11,5 @@ create table results_by_component (
   search_date datetime default CURRENT_TIMESTAMP,
   primary key (id)
 ) engine=innodb;
+
+create index term_rating on results_by_component(term, rating);

@@ -22,8 +22,11 @@ create table labeledResult (
   id int not null auto_increment,
   resultsetId int not null,
   filePage varchar(255) not null,
-  position tinyint not null,
+  position smallint not null,
+  score decimal(10, 5) not null,
   rating tinyint not null,
   primary key (id),
   foreign key (resultsetId) references resultset(id)
 ) engine=innodb;
+
+create index resultsetId_rating_position_score on labeledResult(resultsetId, rating, position, score);
