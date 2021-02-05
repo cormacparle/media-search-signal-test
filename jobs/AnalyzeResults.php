@@ -132,13 +132,21 @@ class AnalyzeResults {
             // overall f1score is not an arithmetic average of the individual f1scores,
             // but a calculation based on the harmonic means of all precision &
             // recall values, so that it's more sensitive to extremes
-            $f1Score . "," .
+            ( $f1Score ?? '/' ) . "," .
             ( $precisionAt10 ?? '/' ) . "," .
             ( $precisionAt25 ?? '/' ) . "," .
             ( $precisionAt50 ?? '/' ) . "," .
             ( $precisionAt100 ?? '/' ) . "," .
             ( $recall ?? '/' ) . "\n"
         );
+
+        return '' .
+	        'F1 Score      | ' . ( $f1Score ?? '/' ) . "\n".
+            'Precision@10  | ' . ( $precisionAt10 ?? '/' ) . "\n".
+            'Precision@25  | ' . ( $precisionAt25 ?? '/' ) . "\n".
+            'Precision@50  | ' . ( $precisionAt50 ?? '/' ) . "\n".
+            'Precision@100 | ' . ( $precisionAt100 ?? '/' ) . "\n".
+            'Recall        | ' . ( $recall ?? '/' ) . "\n";
     }
 
     private function getTruePositive( int $resultsetId, int $offset ) : int {
@@ -238,4 +246,4 @@ if ( isset( $options['searchId'] ) ) {
     $searchId = $findLabeledImagesJob();
 }
 $job = new AnalyzeResults( $config, $searchId );
-$job->run();
+echo $job->run();

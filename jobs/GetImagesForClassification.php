@@ -38,6 +38,8 @@ class GetImagesForClassification {
 
         $this->ch = curl_init();
         curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt( $this->ch, CURLOPT_COOKIEJAR, $config['search']['cookiePath'] );
+        curl_setopt( $this->ch, CURLOPT_COOKIEFILE, $config['search']['cookiePath'] );
 
         $this->log = fopen(
             __DIR__ . '/../' . $config['log']['getImages'],
@@ -118,12 +120,12 @@ class GetImagesForClassification {
             foreach ( $titles as $index => $title ) {
                 $query = 'insert into results_by_component set ' .
                         ' position= ' . intval( $index + 1 ) . ', ' .
-						' term="' . $this->db->real_escape_string( $searchTerm ) . '", '.
-						' component="' . $this->db->real_escape_string( $component ) . '", ' .
-						' score=' .  floatval( $title['score'] ) . ', ' .
-						' file_page="' . $this->db->real_escape_string( $title['title'] ) . '", ' .
-						' image_url="' . $this->db->real_escape_string(
-						    $this->getImageUrl( $title['title'], $titleMetaData )
+                        ' term="' . $this->db->real_escape_string( $searchTerm ) . '", '.
+                        ' component="' . $this->db->real_escape_string( $component ) . '", ' .
+                        ' score=' .  floatval( $title['score'] ) . ', ' .
+                        ' file_page="' . $this->db->real_escape_string( $title['title'] ) . '", ' .
+                        ' image_url="' . $this->db->real_escape_string(
+                            $this->getImageUrl( $title['title'], $titleMetaData )
                         ) . '"';
                 $this->db->query( $query  );
             }
