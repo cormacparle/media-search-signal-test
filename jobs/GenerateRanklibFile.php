@@ -5,16 +5,20 @@ namespace MediaSearchSignalTest\Jobs;
 use mysqli;
 
 class QueryResponseParser {
-    public function parseQueryResponse( array $queryResponse, string $featuresetName ) :
+    public function parseQueryResponse( array $queryResponse, string $featuresetName, int $queryId
+    ) :
     array {
         $scores = [];
+        if ( !isset( $queryResponse['hits']['hits'] ) ) {
+            var_dump( $queryResponse );
+            die( "Weird. No hits in the query response for query id " . $queryId . ".\n" );
+        }
         foreach ( $queryResponse['hits']['hits'] as $hit ) {
             $score = [];
             $fields = $hit['fields']['_ltrlog'][0][ $featuresetName ];
-            foreach ( $fields as $field ) {
-                $score[$field['name']] = $field['value'] ?? 0;
+            foreach ( $fields as $index => $field ) {
+                $score[ $index + 1 ] = $field['value'] ?? 0;
             }
-            ksort( $score );
             $scores[$hit['_source']['title']] = $score;
         }
 
@@ -26,11 +30,13 @@ class GenerateRanklibFile {
 
     private $ch;
     private $log;
+    private $out;
     private $queryDir;
     private $featuresetName;
     /** @var QueryResponseParser  */
     private $queryResponseParser;
     private $db;
+    private $searchTermsFilename;
 
     public function __construct( array $config ) {
         $this->db = new mysqli( $config['db']['host'], $config['client']['user'],
@@ -44,19 +50,33 @@ class GenerateRanklibFile {
         curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
         curl_setopt( $this->ch, CURLOPT_POST, true );
         curl_setopt( $this->ch, CURLOPT_HTTPHEADER, [ 'Content-Type: application/json' ] );
-        curl_setopt( $this->ch, CURLOPT_URL, 'http://localhost:9200/commonswiki_file/_search' );
+        curl_setopt( $this->ch, CURLOPT_SSL_VERIFYPEER, false );
+        curl_setopt( $this->ch, CURLOPT_SSL_VERIFYHOST, false );
+        curl_setopt( $this->ch, CURLOPT_URL, 'https://127.0.0.1:9243/commonswiki_file/_search' );
 
         $this->log = fopen(
             __DIR__ . '/../' . $config['log']['generateRanklibFile'],
             'a'
         );
+
+        $this->out = fopen(
+            __DIR__ . '/../' . $config['ltr']['ranklibOutputDir'] .
+            $config['featuresetName'] . '.tsv',
+            'w'
+        );
+
         $this->queryDir = __DIR__ . '/../' . $config['queryDir'] . '/';
         $this->queryResponseParser = new QueryResponseParser();
         $this->featuresetName = $config['featuresetName'];
+        $this->searchTermsFilename =
+            __DIR__ . '/../' . $config['search']['searchTermsWithLanguagesAndEntitiesFile'];
     }
 
     public function __destruct() {
+        curl_close( $this->ch );
         fclose( $this->log );
+        fclose( $this->out );
+        mysqli_close( $this->db );
     }
 
     public function run() {
@@ -64,6 +84,11 @@ class GenerateRanklibFile {
         $queryFiles = array_diff( scandir( $this->queryDir) , [ '..', '.' ] );
         foreach ( $queryFiles as $index => $queryFile ) {
             $this->log( 'Sending query ' . $queryFile );
+            if ( preg_match( '/_([0-9]+)\.json$/', $queryFile, $matches ) ) {
+                $queryId = $matches[1];
+            } else {
+                die( "Something up with query filename structure.\n" );
+            }
             curl_setopt(
                 $this->ch,
                 CURLOPT_POSTFIELDS,
@@ -72,26 +97,65 @@ class GenerateRanklibFile {
             $result = curl_exec( $this->ch );
             if ( curl_errno( $this->ch ) ) {
                 $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
-                die( 'Exiting because of curl error, see log for details.' );
+                die( "Exiting because of curl error, see log for details.\n" );
             }
             $scores = $this->queryResponseParser->parseQueryResponse( json_decode( $result,
-                true ), $this->featuresetName );
-
+                true ), $this->featuresetName, $queryId );
+            $this->writeRanklibData( $queryId, $scores );
         }
         $this->log( 'End' . "\n" );
     }
 
-    private function getRatingsForFiles( $fileNames ) {
-        $fileNamesToFilePages = [];
-        foreach( $fileNames as $fileName ) {
-            $fileNamesToFilePages[ $fileName ] =
+    private function getRatingsByFile() : array {
+        static $ratingsByFile;
+        if ( is_null( $ratingsByFile ) ) {
+            $ratingsByFile = [];
+            $ratings =
+                $this->db->query( 'select file_page,term,rating from results_by_component where ' .
+                    'rating is not null' );
+            while ( $rating = $ratings->fetch_object() ) {
+                $filename = $this->stripTitleNamespace( $rating->file_page );
+                $ratingsByFile[strtolower( $rating->term )][$filename] = $rating->rating;
+            }
         }
+        return $ratingsByFile;
+    }
 
-        $ratings = $this->db->query(
-            'select file_page,rating from results_by_component where ' .
-            'term ="' . $this->db->real_escape_string( $searchTermsRow[0] ) . '" and ' .
-            'rating is not null'
-        );
+    private function getSearchTerms() : array {
+        static $searchTerms;
+        if ( is_null( $searchTerms ) ) {
+            $searchTermsLines =  file( $this->searchTermsFilename );
+            foreach ( $searchTermsLines as $searchTermsLine ) {
+                $searchTermsElements = explode( ',', $searchTermsLine );
+                $searchTerms[ $searchTermsElements[0] ] = $searchTermsElements[1];
+            }
+        }
+        return $searchTerms;
+    }
+
+    private function writeRanklibData( int $queryId, array $scores ) {
+        $ratingsByFile = $this->getRatingsByFile();
+        $searchTerms = $this->getSearchTerms();
+        foreach ( $scores as $file => $scoreArray ) {
+            $rating = $ratingsByFile[strtolower( $searchTerms[$queryId + 1] )][ $file ] ?? null;
+            if ( is_null( $rating ) ) {
+                var_dump( $queryId, $ratingsByFile[strtolower( $searchTerms[$queryId + 1] )], 
+                    $file, $scoreArray );
+                die( "Rating for " . $file . " for " . $searchTerms[$queryId + 1] . " not found.\n" );
+            }
+            $ranklibLine =
+                $rating . "\t" .
+                "qid:" . $queryId . "\t";
+            foreach ( $scoreArray as $index => $score ) {
+                $ranklibLine .= $index . ":" . $score . "\t";
+            }
+            $ranklibLine .= "# " . $file . "\t" . $searchTerms[$queryId + 1] . "\n";
+            fwrite( $this->out, $ranklibLine );
+        }
+    }
+
+    private function stripTitleNamespace( string $titleString ) : string {
+        return str_replace( '_', ' ', substr( trim( $titleString ), 5 ) );
     }
 
     public function log( string $msg ) {

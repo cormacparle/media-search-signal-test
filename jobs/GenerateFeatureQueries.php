@@ -14,7 +14,7 @@ class MediaSearch_20210127 implements QueryJsonCreator {
     public function createQueryString( array $searchTermsRow, array $titles ) :
     string {
         $params = [
-            'textSearchTerm' => trim( $searchTermsRow[0] ),
+            'textSearchTerm' => str_replace( '"', '\"', trim( $searchTermsRow[0] ) ),
             'languageCode' => trim( $searchTermsRow[1] ),
             'commaSeparatedTitles' => '"' . implode("\",\n\"", $titles ) . "\"\n",
         ];
@@ -54,7 +54,7 @@ class GenerateFeatureQueries {
             __DIR__ . '/../' . $config['log']['generateFeatureQueries'],
             'a'
         );
-        $this->outputDir = __DIR__ . '/../' . $config['ltr']['outputDir'] . '/';
+        $this->outputDir = __DIR__ . '/../' . $config['ltr']['queriesOutputDir'] . '/';
         $this->queryStringGenerator = new $config['queryJsonGenerator'];
     }
 
@@ -70,7 +70,7 @@ class GenerateFeatureQueries {
             $titles = [];
             $labeledImages = $this->db->query(
                 'select distinct file_page from results_by_component where ' .
-                'term ="' . $this->db->real_escape_string( $searchTermsRow[0] ) . '" and ' .
+                'term ="' . $this->db->real_escape_string( $searchTermsRow[1] ) . '" and ' .
                 'rating is not null'
             );
             while ( $labeledImage = $labeledImages->fetch_object() ) {
@@ -86,13 +86,13 @@ class GenerateFeatureQueries {
         $this->log( 'End' . "\n" );
     }
 
-    public function getOutputFilename( $index ) {
+    private function getOutputFilename( $index ) {
         $classNameArray = explode( '\\', get_class( $this->queryStringGenerator ) );
         return $this->outputDir . DIRECTORY_SEPARATOR .
             end( $classNameArray ) . '_' . $index  . '.json';
     }
 
-    public function log( string $msg ) {
+    private function log( string $msg ) {
         fwrite( $this->log, date( 'Y-m-d H:i:s' ) . ': ' . $msg . "\n" );
     }
 }
