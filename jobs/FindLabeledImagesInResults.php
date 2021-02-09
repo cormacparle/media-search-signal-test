@@ -28,6 +28,8 @@ class FindLabeledImagesInResults {
 
         $this->ch = curl_init();
         curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt( $this->ch, CURLOPT_COOKIEJAR, $config['search']['cookiePath'] );
+        curl_setopt( $this->ch, CURLOPT_COOKIEFILE, $config['search']['cookiePath'] );
 
         $this->log = fopen(
             __DIR__ . '/../' . $config['log']['findLabeledImages'],
@@ -87,7 +89,7 @@ class FindLabeledImagesInResults {
             $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
             die( 'Exiting because of curl error, see log for details.' );
         }
-        $array = json_decode( $result, true );
+        $array = json_decode( $result, true ) ?? [];
         return $array;
     }
 
@@ -165,7 +167,7 @@ $config = array_merge(
 );
 $job = new FindLabeledImagesInResults(
     $config,
-    $options['searchurl'] ?? '/w/index.php?search=%s+filetype:bitmap&ns6=1&cirrusDumpResult&mediasearch=1&limit=99999999',
+    $options['searchurl'] ?? '/w/api.php?action=query&list=search&srsearch=%s+filetype:bitmap&srnamespace=6&srlimit=max&uselang=en&mediasearch&cirrusDumpResult',
     $options['description'] ?? ''
 );
-$searchId = $job->run();
+echo $job->run();
