@@ -174,4 +174,4 @@ $job = new FindLabeledImagesInResults(
     $options['searchurl'] ?? '/w/api.php?action=query&list=search&srsearch=%s+filetype:bitmap&srnamespace=6&srlimit=max&uselang=en&mediasearch&cirrusDumpResult',
     $options['description'] ?? ''
 );
-echo $job->run();
+$searchId = $job->run();

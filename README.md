@@ -8,6 +8,8 @@ The first thing we set out to do is gather lots of image results from existing c
 
 The script to gather search results has been run on toolforge, and the interface for labeling them is public at https://media-search-signal-test.toolforge.org/
 
+Also there's a mysqldump of the labeled data as of Feb 2021 available in this repo in `sql/`
+
 ### jobs/GetImagesForClassification.php
 
 Search commons using MediaSearch for all the search terms in input/searchTerms.csv (a mixture of the most popular search terms and a selection of random search terms), and store the results along with their score from elasticsearch.
@@ -28,7 +30,7 @@ More detailed information below ...
 
 ### jobs/FindLabeledImagesInResults.php
 
-Search commons using MediaSearch for all the search terms in searchTerms/searchTerms.csv, then find all the labeled images in each resultset and store them
+Search commons using MediaSearch for all the search terms in input/searchTerms.csv, then find all the labeled images in each resultset and store them
 
 The point of this is to allow the user to do a search and store labeled images from the search, in order to allow the results of different searches to be compared.
 
