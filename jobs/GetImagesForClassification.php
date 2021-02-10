@@ -8,7 +8,7 @@ class GetImagesForClassification {
 
     private $db;
     private $searchUrl;
-    private $searchTerms;
+    private $searchTerms = [];
     private $searchComponents = [
         'statement',
         'caption',
@@ -33,8 +33,12 @@ class GetImagesForClassification {
         }
 
         $this->searchUrl = $config['search']['baseUrl'];
-        $this->searchTerms =
-            file( __DIR__ . '/../' . $config['search']['searchTermsFile'] );
+        $searchTermsFile =
+            fopen( __DIR__ . '/../' . $config['search']['searchTermsFile'], 'r' );
+        while ( $searchTermsRow = fgetcsv( $searchTermsFile, 1024, ',', '"' ) ) {
+            $this->searchTerms[] = $searchTermsRow[1];
+        }
+        fclose( $searchTermsFile );
 
         $this->ch = curl_init();
         curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
@@ -203,9 +207,12 @@ class GetImagesForClassification {
     }
 }
 
-$config = array_merge(
-    parse_ini_file( __DIR__ . '/../config.ini', true ),
-    parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-);
+$config = parse_ini_file( __DIR__ . '/../config.ini', true );
+if ( file_exists( __DIR__ . '/../replica.my.cnf' ) ) {
+    $config = array_merge(
+        $config,
+        parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+    );
+}
 $job = new GetImagesForClassification( $config );
 $job->run();

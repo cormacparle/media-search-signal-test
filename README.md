@@ -56,3 +56,9 @@ Params
 ### runSearches.php
 
 A convenience script that does analysis on a bunch of searches.
+
+## Installation
+
+Create a mysql db, populate it using `search_component_results.sql` and `labeled_images_in_results.sql`, update config to point at the right db, and away you go.
+
+If you want to use the web app for labeling images locally, you need to point a webserver at `public_html` 
