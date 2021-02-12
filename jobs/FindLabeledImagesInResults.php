@@ -161,13 +161,17 @@ class FindLabeledImagesInResults {
 }
 
 $options = getopt('', [ 'description::', 'searchurl::' ]);
-$config = array_merge(
-    parse_ini_file( __DIR__ . '/../config.ini', true ),
-    parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-);
+$config = parse_ini_file( __DIR__ . '/../config.ini', true );
+if ( file_exists( __DIR__ . '/../replica.my.cnf' ) ) {
+    $config = array_merge(
+        $config,
+        parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+    );
+}
+
 $job = new FindLabeledImagesInResults(
     $config,
     $options['searchurl'] ?? '/w/api.php?action=query&list=search&srsearch=%s+filetype:bitmap&srnamespace=6&srlimit=max&uselang=en&mediasearch&cirrusDumpResult',
     $options['description'] ?? ''
 );
-echo $job->run();
+$searchId = $job->run();

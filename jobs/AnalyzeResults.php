@@ -230,10 +230,13 @@ class AnalyzeResults {
     }
 }
 
-$config = array_merge(
-    parse_ini_file( __DIR__ . '/../config.ini', true ),
-    parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-);
+$config = parse_ini_file( __DIR__ . '/../config.ini', true );
+if ( file_exists( __DIR__ . '/../replica.my.cnf' ) ) {
+    $config = array_merge(
+        $config,
+        parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+    );
+}
 
 $options = getopt( '', [ 'searchId:', 'description::' ] );
 if ( isset( $options['searchId'] ) ) {

@@ -54,7 +54,6 @@ $searches = [
 
 foreach ($searches as $description => $url) {
     echo "$description\n" . str_repeat('-', strlen($description)) . "\n";
-    $id = shell_exec("php jobs/FindLabeledImagesInResults.php --description='$description' --searchurl='$url'");
-    echo shell_exec("php jobs/AnalyzeResults.php --description='$description' --searchId=$id");
+    echo shell_exec("php jobs/AnalyzeResults.php --description='$description'");
     echo "\n\n";
 }
