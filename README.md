@@ -82,10 +82,9 @@ An example featureset is in `input/featureset.MediaSearch_20210127.json`. This n
 
 The example featureset needs as inputs
 * a search term
-* a language
-* a bunch of `statement_keywords` strings to search for so it can find things using structured data. 
+for so it can find things using structured data. 
 
-We already have search term and language in `input/searchTerms.csv` 
+We already have search term and language in `input/searchTerms.csv` MediaSearch_20210127_1216.json and MediaSearch_20210127_1216.json
 
 We also have search term, language AND the `statement_keywords` strings in `input/searchTermsWithEntities.csv`, which was generated using `jobs/GenerateSearchTermsWithEntitiesFile.php`
 
@@ -99,7 +98,7 @@ ATM there is just one class available - `MediaSearch_20210127` in the job php fi
 
 So, to create the queries, run `php jobs/GenerateFeatureQueries.php --queryJsonGenerator="MediaSearchSignalTest\Jobs\MediaSearch_20210127"` and the query json files will be output to `out/ltr/`.
 
-(note that because mysql select doesn't distinguish 'dali' from 'dalí' you'll have to adjust the json files XXX and YYY for those queries to work (or just remove them))
+(note that because mysql select doesn't distinguish 'dali' from 'dalí' you'll have to adjust the json files MediaSearch_20210127_1216.json and MediaSearch_20210127_1287.json for those queries to work (or just remove them))
 
 ### Step 3: creating the ranklib file
 
