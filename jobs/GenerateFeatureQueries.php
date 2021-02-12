@@ -14,13 +14,13 @@ class MediaSearch_20210127 implements QueryJsonCreator {
     public function createQueryString( array $searchTermsRow, array $titles ) :
     string {
         $params = [
-            'textSearchTerm' => str_replace( '"', '\"', trim( $searchTermsRow[0] ) ),
-            'languageCode' => trim( $searchTermsRow[1] ),
+            'textSearchTerm' => addcslashes( trim( $searchTermsRow[1] ), '"' ),
+            'languageCode' => trim( $searchTermsRow[2] ),
             'commaSeparatedTitles' => '"' . implode("\",\n\"", $titles ) . "\"\n",
         ];
-        for ( $i = 1; $i < count( $searchTermsRow ) - 1 ; $i++ ) {
-            $params[ 'DigRepOf_' . $i ] = 'P6243=' . trim( $searchTermsRow[$i + 1] );
-            $params[ 'Depicts_' . $i ] = 'P180=' . trim( $searchTermsRow[$i + 1] );
+        for ( $i = 1; $i < count( $searchTermsRow ) - 2 ; $i++ ) {
+            $params[ 'DigRepOf_' . $i ] = 'P6243=' . trim( $searchTermsRow[$i + 2] );
+            $params[ 'Depicts_' . $i ] = 'P180=' . trim( $searchTermsRow[$i + 2] );
         }
 
         $m = new \Mustache_Engine( ['entity_flags' => ENT_NOQUOTES] );
@@ -48,7 +48,7 @@ class GenerateFeatureQueries {
         }
 
         $this->searchTerms =
-            file( __DIR__ . '/../' . $config['search']['searchTermsWithLanguagesAndEntitiesFile'] );
+            file( __DIR__ . '/../' . $config['search']['searchTermsWithEntitiesFile'] );
 
         $this->log = fopen(
             __DIR__ . '/../' . $config['log']['generateFeatureQueries'],
@@ -66,7 +66,7 @@ class GenerateFeatureQueries {
         $this->log( 'Begin' . "\n" );
         foreach ( $this->searchTerms as $index => $searchTermsRowString ) {
             $searchTermsRow = explode( ',', $searchTermsRowString );
-            $this->log( 'Creating query for ' . $searchTermsRow[0] );
+            $this->log( 'Creating query for ' . $searchTermsRow[1] );
             $titles = [];
             $labeledImages = $this->db->query(
                 'select distinct file_page from results_by_component where ' .
@@ -76,7 +76,7 @@ class GenerateFeatureQueries {
             while ( $labeledImage = $labeledImages->fetch_object() ) {
                 $title = trim( $labeledImage->file_page );
                 $titleNoNamespace = str_replace( '_', ' ', substr( $title, 5 ) );
-                $titles[] = $titleNoNamespace;
+                $titles[] = addcslashes( $titleNoNamespace, '"' );
             }
             if ( count( $titles ) > 0 ) {
                 $query = $this->queryStringGenerator->createQueryString( $searchTermsRow, $titles );

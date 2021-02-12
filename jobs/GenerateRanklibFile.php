@@ -69,7 +69,7 @@ class GenerateRanklibFile {
         $this->queryResponseParser = new QueryResponseParser();
         $this->featuresetName = $config['featuresetName'];
         $this->searchTermsFilename =
-            __DIR__ . '/../' . $config['search']['searchTermsWithLanguagesAndEntitiesFile'];
+            __DIR__ . '/../' . $config['search']['searchTermsWithEntitiesFile'];
     }
 
     public function __destruct() {
@@ -83,6 +83,9 @@ class GenerateRanklibFile {
         $this->log( 'Begin' . "\n" );
         $queryFiles = array_diff( scandir( $this->queryDir) , [ '..', '.' ] );
         foreach ( $queryFiles as $index => $queryFile ) {
+            if ( $queryFile === '.gitignore' ) {
+                continue;
+            }
             $this->log( 'Sending query ' . $queryFile );
             if ( preg_match( '/_([0-9]+)\.json$/', $queryFile, $matches ) ) {
                 $queryId = $matches[1];

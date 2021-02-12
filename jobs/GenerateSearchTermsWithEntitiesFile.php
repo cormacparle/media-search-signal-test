@@ -12,8 +12,13 @@ class GenerateSearchTermsWithEntitiesFile {
 
     public function __construct( array $config ) {
         $this->entitySearchBaseUrl = $config['search']['entitySearchBaseUrl'];
-        $this->searchTerms =
-            file( __DIR__ . '/../' . $config['search']['searchTermsFile'] );
+
+        $searchTermsFile =
+            fopen( __DIR__ . '/../' . $config['search']['searchTermsFile'], 'r' );
+        while ( $searchTermsRow = fgetcsv( $searchTermsFile, 1024, ',', '"' ) ) {
+            $this->searchTerms[] = $searchTermsRow;
+        }
+        fclose( $searchTermsFile );
 
         $this->ch = curl_init();
         curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
@@ -35,8 +40,8 @@ class GenerateSearchTermsWithEntitiesFile {
 
     public function run() {
         $this->log( 'Begin' . "\n" );
-        foreach ( $this->searchTerms as $searchTerm ) {
-            $searchTerm = trim( $searchTerm );
+        foreach ( $this->searchTerms as $searchTermArray ) {
+            $searchTerm = trim( $searchTermArray[1] );
             $this->log( 'Getting entities for ' . $searchTerm );
             $entities = array_pad(
                 $this->getEntities( $searchTerm ),
@@ -45,7 +50,7 @@ class GenerateSearchTermsWithEntitiesFile {
             );
             fwrite(
                 $this->out,
-                $searchTerm . "," . implode( ",", $entities ) . "\n"
+                implode( ",", array_merge( $searchTermArray, $entities ) ) . "\n"
             );
         }
         $this->log( 'End' . "\n" );

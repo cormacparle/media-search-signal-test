@@ -33,6 +33,7 @@ class GetImagesForClassification {
         }
 
         $this->searchUrl = $config['search']['baseUrl'];
+
         $searchTermsFile =
             fopen( __DIR__ . '/../' . $config['search']['searchTermsFile'], 'r' );
         while ( $searchTermsRow = fgetcsv( $searchTermsFile, 1024, ',', '"' ) ) {
