@@ -154,7 +154,9 @@ class AnalyzeResults {
             'select count(*) as count from labeledResult where ' .
             'resultsetId = ' . intval( $resultsetId ) . ' and ' .
             'position < ' . intval($offset) . ' and ' . // only count hits before a given offset
-            'score > 1 and ' . // only count results that were scored with this algorithm
+            // results with zero scores can happen if we're using the url to tweak boosts for
+            // specific search signals - these should probably be ignored
+            'score > 0 and ' .
             'rating = 1'
         )->fetch_object()->count;
     }
@@ -164,7 +166,9 @@ class AnalyzeResults {
             'select count(*) as count from labeledResult where ' .
             'resultsetId = ' . intval( $resultsetId ) . ' and ' .
             'position < ' . intval($offset) . ' and ' . // only count hits before a given offset
-            'score > 1 and ' . // only count results that were scored with this algorithm
+            // results with zero scores can happen if we're using the url to tweak boosts for
+            // specific search signals - these should probably be ignored
+            'score > 0 and ' .
             'rating = -1'
         )->fetch_object()->count;
     }
@@ -209,8 +213,8 @@ class AnalyzeResults {
         return $truePositive / ( $truePositive + $falsePositive );
     }
 
-    private function calculateRecall( int $truePositive, string $falseNegative ) : ?float {
-        if ( $truePositive === 0 && $falseNegative === 0) {
+    private function calculateRecall( int $truePositive, int $falseNegative ) : ?float {
+        if ( $truePositive == 0 && $falseNegative == 0) {
             // if we don't know anything (positive or negative) about any of the
             // results in this set, then we must ignore it
             return null;
