@@ -2,103 +2,71 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-use mysqli;
+require 'GenericJob.php';
 
-class FindLabeledImagesInResults {
+class FindLabeledImagesInResults extends GenericJob {
 
-    private $db;
-    private $searchUrl;
-    private $ch;
-    private $log;
-    private $description;
-
-    public function __construct( array $config, string $searchUrl, string $description ) {
-        $this->db = new mysqli(
-            $config['db']['host'],
-            $config['client']['user'],
-            $config['client']['password'],
-            $config['db']['dbname']
-        );
-        if ( $this->db->connect_error ) {
-            die('DB connection Error (' . $this->db->connect_errno . ') '
-                . $this->db->connect_error);
+    public function __construct( array $config = [] ) {
+        if ( !isset( $config['searchurl'] ) ) {
+            $config['searchurl'] =
+                '/w/api.php?action=query&generator=search&gsrsearch=filetype:bitmap|drawing+%s' .
+                '&gsrlimit=max&gsroffset=0&gsrnamespace=6&format=json&uselang=%s&cirrusDumpResult';
         }
-
-        $this->searchUrl = $config['search']['baseUrl'] . $searchUrl;
-
-        $this->ch = curl_init();
-        curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt( $this->ch, CURLOPT_COOKIEJAR, $config['search']['cookiePath'] );
-        curl_setopt( $this->ch, CURLOPT_COOKIEFILE, $config['search']['cookiePath'] );
-
-        $this->log = fopen(
-            __DIR__ . '/../' . $config['log']['findLabeledImages'],
-            'a'
-        );
-
-        $this->description = $description;
-        if ( $this->description == '' ) {
-            $this->description = 'Search of ' . $this->searchUrl . ' on ' . date('Y-m-d H:i:s');
+        if ( !isset( $config['description'] ) ) {
+            $config['description'] = 'Search of ' . $config['searchurl'] . ' on ' .
+                date('Y-m-d H:i:s');
         }
-    }
-
-    public function __destruct() {
-        curl_close( $this->ch );
-        fclose( $this->log );
+        parent::__construct( $config );
+        $this->setLogFileHandle( __DIR__ . '/../' . $this->config['log']['findLabeledImages'] );
     }
 
     public function run() {
         $searchId = $this->createSearchRecord();
-        $this->log( 'Begin #' . $searchId . ': ' . $this->description );
+        $this->log( 'Begin #' . $searchId . ': ' . $this->config['description'] );
         foreach ( $this->getSearchTerms() as $searchTerm ) {
-            $this->log( 'Searching ' . $searchTerm );
-            $searchTerm = trim( $searchTerm );
-            $this->processResults( $searchTerm, $this->search( $searchTerm ), $searchId );
+            $this->log( 'Searching ' . $searchTerm['term'] . ' in ' . $searchTerm['language'] );
+            $results = $this->httpGETJson(
+                $this->config['search']['baseUrl'].$this->config['searchurl'],
+                $searchTerm['term'],
+                $searchTerm['language']
+            );
+            $this->processResults( $searchTerm['term'], $searchTerm['language'],
+                $results, $searchId );
         }
-        $this->log( 'End #' . $searchId . ': ' . $this->description );
+        $this->log( 'End #' . $searchId . ': ' . $this->config['description'] );
         return $searchId;
-    }
-
-    public function log( string $msg ) {
-        fwrite( $this->log, date( 'Y-m-d H:i:s' ) . ': ' . $msg . "\n" );
     }
 
     private function createSearchRecord() {
         $this->db->query(
             'insert into search set ' .
-            'description="' . $this->db->real_escape_string( $this->description ). '"'
+            'description="' . $this->db->real_escape_string( $this->config['description'] ). '"'
         );
         return $this->db->insert_id;
     }
 
     private function getSearchTerms() : array {
         $searchTerms = [];
-        $searchTermResults = $this->db->query(
-            'select distinct(term) as term from results_by_component where rating is not null'
-        );
-        while ( $searchTerm = $searchTermResults->fetch_assoc() ) {
-            $searchTerms[] = $searchTerm['term'];
+        $query = 'select distinct searchTerm, language from ratedSearchResult';
+        if ( isset( $this->config['tag'] ) ) {
+            $query .= ' join ratedSearchResult_tag ' .
+                'on ratedSearchResult_tag.ratedSearchResultId=ratedSearchResult.id ' .
+                'join tag on ratedSearchResult_tag.tagId=tag.id ' .
+                ' where tag.text="' . $this->dbEscape( $this->config['tag'] ). '"';
+        }
+        $searchTermResults = $this->db->query( $query );
+        while ( $row = $searchTermResults->fetch_assoc() ) {
+            $searchTerms[] = [
+                'term' => trim( $row['searchTerm'] ),
+                'language' => $row['language']
+            ];
         }
         return $searchTerms;
     }
 
-    private function search( string $searchTerm ) : array {
-        curl_setopt( $this->ch, CURLOPT_URL, $this->getSearchUrl( $searchTerm ) );
-        $result = curl_exec( $this->ch );
-        if ( curl_errno( $this->ch ) ) {
-            $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
-            die( 'Exiting because of curl error, see log for details.' );
-        }
-        $array = json_decode( $result, true ) ?? [];
-        return $array;
-    }
-
-    private function getSearchUrl( string $searchTerm ) : string {
-        return sprintf( $this->searchUrl, urlencode( $searchTerm ) );
-    }
-
-    private function processResults( string $searchTerm, array $searchResults, int $searchId ) {
-        $labeledData = $this->getLabeledData( $searchTerm );
+    private function processResults( string $searchTerm, string $language, array $searchResults,
+                                     int $searchId ) {
+        $labeledData = $this->getLabeledData( $searchTerm, $language );
 
         $hits = $searchResults['__main__']['result']['hits']['hits'] ?? [];
         if ( $hits ) {
@@ -113,7 +81,7 @@ class FindLabeledImagesInResults {
 
             $labeledImageCount = 0;
             foreach ( $hits as $index => $hit ) {
-                $title = $this->extractTitle( $hit['_source'] );
+                $title = $hit['_source']['title'];
                 if ( isset( $labeledData[$title] ) ) {
                     $this->db->query(
                         'insert into labeledResult set ' .
@@ -130,48 +98,23 @@ class FindLabeledImagesInResults {
         }
     }
 
-    private function getLabeledData( string $searchTerm ) : array {
+    private function getLabeledData( string $searchTerm, string $language ) : array {
         $return = [];
         $labeledImages = $this->db->query(
-            'select distinct file_page, rating from results_by_component where
-            term="' . $this->db->real_escape_string( $searchTerm ) .'"
-            and rating is not null'
+            'select distinct result, rating from ratedSearchResult where ' .
+            'searchTerm="' . $this->db->real_escape_string( $searchTerm ) .'" and ' .
+            'language="' . $this->db->real_escape_string( $language ) .'"'
         );
         while ( $labeledImage = $labeledImages->fetch_assoc() ) {
-            if (
-                isset($return[$labeledImage['file_page']]) &&
-                $return[$labeledImage['file_page']] !== $labeledImage['rating']
-            ) {
-                // guard against conflicting ratings
-                unset($return[$labeledImage['file_page']]);
-            } else {
-                $return[$labeledImage['file_page']] = $labeledImage['rating'];
-            }
+            $return[$labeledImage['result']] = $labeledImage['rating'];
         }
         return $return;
     }
-
-    private function extractTitle( array $source ) : string {
-        $title = str_replace( ' ', '_', $source['title'] );
-        if ( $source['namespace'] > 0 ) {
-            $title = $source['namespace_text'] . ':' . $title;
-        }
-        return $title;
-    }
 }
 
-$options = getopt('', [ 'description::', 'searchurl::' ]);
-$config = parse_ini_file( __DIR__ . '/../config.ini', true );
-if ( file_exists( __DIR__ . '/../replica.my.cnf' ) ) {
-    $config = array_merge(
-        $config,
-        parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-    );
-}
+$options = getopt('', [ 'description::', 'searchurl::', 'tag::' ]);
 
 $job = new FindLabeledImagesInResults(
-    $config,
-    $options['searchurl'] ?? '/w/api.php?action=query&list=search&srsearch=%s+filetype:bitmap&srnamespace=6&srlimit=max&uselang=en&mediasearch&cirrusDumpResult',
-    $options['description'] ?? ''
+    $options
 );
 $searchId = $job->run();
