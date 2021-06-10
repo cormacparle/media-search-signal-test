@@ -11,6 +11,8 @@ create table ratedSearchResult (
   primary key(id)
 ) engine=innodb;
 
+create index term_rating on ratedSearchResult(searchTerm, rating);
+
 create table tag (
   id int not null auto_increment,
   text varchar(255) not null,                  # the tag name

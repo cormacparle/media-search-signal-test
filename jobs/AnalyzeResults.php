@@ -183,8 +183,8 @@ class AnalyzeResults {
         $ratings = [];
         $labeledImages = $this->db->query(
             'select result, rating from ratedSearchResult where
-            searchTerm="' . $this->db->real_escape_string( trim( $searchTerm ) ) .'"
-            and rating is not null'
+            searchTerm="' . $this->db->real_escape_string( trim( $searchTerm ) ) .'" and
+            rating is not null'
         );
         while ( $labeledImage = $labeledImages->fetch_assoc() ) {
             $ratings[$labeledImage['result']] = $labeledImage['rating'];
