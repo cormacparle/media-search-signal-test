@@ -50,8 +50,8 @@ class AnalyzeResults {
         $falsePositivesAt10 = $falsePositivesAt25 = $falsePositivesAt50 = $falsePositivesAt100 = 0;
         foreach ( $resultsets as $resultset ) {
             $knownGoodResults = (int) $this->db->query(
-                'select count(*) as count from results_by_component where ' .
-                'term = "' . $this->db->real_escape_string( trim( $resultset['term'] ) ) . '" and ' .
+                'select count(*) as count from ratedSearchResult where ' .
+                'searchTerm = "' . $this->db->real_escape_string( trim( $resultset['term'] ) ) . '" and ' .
                 'rating > 0'
             )->fetch_object()->count;
             if ( $knownGoodResults === 0 ) {
@@ -182,20 +182,12 @@ class AnalyzeResults {
         // of the results was requested; i.e. limit too low...)
         $ratings = [];
         $labeledImages = $this->db->query(
-            'select distinct file_page, rating from results_by_component where
-            term="' . $this->db->real_escape_string( trim( $searchTerm ) ) .'"
+            'select result, rating from ratedSearchResult where
+            searchTerm="' . $this->db->real_escape_string( trim( $searchTerm ) ) .'"
             and rating is not null'
         );
         while ( $labeledImage = $labeledImages->fetch_assoc() ) {
-            if (
-                isset($return[$labeledImage['file_page']]) &&
-                $ratings[$labeledImage['file_page']] !== $labeledImage['rating']
-            ) {
-                // guard against conflicting ratings
-                unset($ratings[$labeledImage['file_page']]);
-            } else {
-                $ratings[$labeledImage['file_page']] = $labeledImage['rating'];
-            }
+            $ratings[$labeledImage['result']] = $labeledImage['rating'];
         }
         $knownPositive = count( array_filter( $ratings, function ( $rating ) {
             return (int) $rating === 1;

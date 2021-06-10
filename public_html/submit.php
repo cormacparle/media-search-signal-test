@@ -18,16 +18,15 @@ if ( !isset( $_POST['id'] ) && $_POST['id'] ) {
 if ( isset( $_POST['skip'] ) && $_POST['skip'] ) {
     echo "skipped image " . intval( $_POST['id'] ) . "\n";
 	$mysqli->query(
-		'update results_by_component 
-		set skipped=1
-		where id=' . intval( $_POST['id'] )
+		'DELETE FROM ratedSearchResult
+		WHERE id=' . intval( $_POST['id'] )
 	);
 } else {
     echo "rated image " . intval( $_POST['id'] ) . " with " . intval( $_POST['rating'] ) . "\n";
 	$mysqli->query(
-		'update results_by_component 
-		set rating='. intval( $_POST['rating'] ) .'
-		where id=' . intval( $_POST['id'] )
+		'UPDATE ratedSearchResult
+		SET rating='. intval( $_POST['rating'] ) .'
+		WHERE id=' . intval( $_POST['id'] )
 	);
 }
 

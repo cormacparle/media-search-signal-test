@@ -55,6 +55,8 @@ abstract class GenericJob {
         $params = array_map( 'urlencode', $params );
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt( $ch, CURLOPT_COOKIEJAR, $this->config['search']['cookiePath'] );
+        curl_setopt( $ch, CURLOPT_COOKIEFILE, $this->config['search']['cookiePath'] );
         curl_setopt( $ch, CURLOPT_USERAGENT, 'Image recommendations test data collector' );
 
         if ( count( $params ) > 0 ) {
@@ -69,14 +71,14 @@ abstract class GenericJob {
         if ( curl_errno( $ch ) ) {
             echo "url: " . $url . "\n";
             echo curl_error( $ch ) . ': ' . curl_errno( $ch ) . "\n";
-            die( "Exiting because of curl error\n" );
+            throw new \Exception( "Exiting because of curl error\n" );
         }
         curl_close( $ch );
         $array = json_decode( $result, true );
         if ( is_null( $array ) ) {
             print_r( $url );
             print_r( $result );
-            die( "Unexpected result format.\n" );
+            throw new \Exception( "Unexpected result format.\n" );
         }
         return $array;
     }

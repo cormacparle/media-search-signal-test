@@ -13,7 +13,7 @@ if ( $mysqli->connect_error ) {
 
 $maxId = $mysqli->query(
 	'select max(id) as id
-	from results_by_component'
+	from ratedSearchResult'
 );
 if ( $maxId === false ) {
 	throw new Exception( 'No images exist' );
@@ -21,9 +21,9 @@ if ( $maxId === false ) {
 $maxId = intval( $maxId->fetch_assoc()['id'] );
 
 $result = $mysqli->query(
-	'select id, term, file_page, image_url
-	from results_by_component
-	where rating is null and skipped=0 and id >= '. rand( 0, $maxId ) .'
+	'select id, searchTerm, result
+	from ratedSearchResult
+	where rating is null and id >= '. rand( 0, $maxId ) .'
 	order by id limit 1'
 );
 

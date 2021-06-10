@@ -113,13 +113,13 @@
         function populateTemplate( data ) {
             var template = document.querySelector( 'template' );
             var clone = template.content.cloneNode( true );
+            var thumburl = 'https://commons.wikimedia.org/w/thumb.php?f=' + data.result.replace( /.+?:/, '' ).replace( / /g, '_' ) + '&w=1000';
 
-            clone.querySelectorAll( '.term' ).forEach( node => node.textContent = data.term );
-            clone.querySelectorAll( '.image_url' ).forEach( node => node.src = data.image_url );
-
-            clone.querySelectorAll( '.bing_url' ).forEach( node => node.src = 'https://www.bing.com/images/search?form=HDRSC2&q=' + encodeURI( data.term ) );
-            clone.querySelectorAll( '.commons_url' ).forEach( node => node.href = 'https://commons.wikimedia.org/wiki/' + data.file_page );
-            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.file_page ).replace( /_/g, ' ' ) );
+            clone.querySelectorAll( '.term' ).forEach( node => node.textContent = data.searchTerm );
+            clone.querySelectorAll( '.image_url' ).forEach( node => node.src = thumburl );
+            clone.querySelectorAll( '.bing_url' ).forEach( node => node.src = 'https://www.bing.com/images/search?form=HDRSC2&q=' + encodeURI( data.searchTerm ) );
+            clone.querySelectorAll( '.commons_url' ).forEach( node => node.href = 'https://commons.wikimedia.org/wiki/' + data.result.replace( / /g, '_' ) );
+            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.result ) );
 
             return clone;
         }

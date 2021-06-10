@@ -8,7 +8,7 @@ The first thing we set out to do is gather lots of image results from existing c
 
 The script to gather search results has been run on toolforge, and the interface for labeling them is public at https://media-search-signal-test.toolforge.org/
 
-Also there's a mysqldump of the labeled data as of Feb 2021 available in this repo in `sql/`
+Also there's a mysqldump of the labeled data as of June 2021 available in this repo in `sql/`
 
 #### jobs/GetImagesForClassification.php
 
@@ -23,7 +23,7 @@ A little web app where the user is presented with a random image from the stored
 We need a quick way to compare search algorithms without having to A/B test, so we made some scripts to do comparisons by running a searches for the search terms used to get the labeled images in the first place, then counting the labeled images in the results and calculating some metrics like precision, recall and f1score. 
 
 If you want to run this locally:
-* there's a dump of the labeled image data we have gathered on toolforge in `sql/results_by_component_20210201.sql`, so load that
+* there's a dump of the labeled image data we have gathered on toolforge in `sql/ratedSearchResult_20210509.sql`, so load that
 * `php jobs/AnalyzeResults.php` ... this will run default mediasearch on commons, analyse the results, and output to the `out/` directory
 
 More detailed information below ...
@@ -54,6 +54,13 @@ If a search id is provided, the results for that search are analysed. If not, `F
 Params
 * `description` A description to be stored in the `search` table. Defaults to the date and time (only used if `searchId` is not provided).
 * `searchId` The id of the stored search that we want to analyse.
+
+#### jobs/Install.php
+
+(Re)installs the tables used by above scripts.
+
+Params
+* `populate` If provided, the tables will be populated with a dump of the labeled image data we have gathered on toolforge.
 
 #### runSearches.php
 
@@ -113,11 +120,11 @@ The script expects there to be an instance of elasticsearch at `https://127.0.0.
 ## Installation
 
 1. create a mysql db
-2. populate it using `search_component_results.sql` and `labeled_images_in_results.sql`
-3. update `config.ini` to point at the right db
-4. run `composer update`
+2. update `config.ini` to point at the right db
+3. run `composer update`
+4. run `php jobs/Install.php` (optionally with `--populate` parameter) to install the DB schema
 5. away you go
 
 A job can just be run via `php jobs/<filename>` or on toolforge it can be run using [`jsub`](https://wikitech.wikimedia.org/wiki/Help:Toolforge/Grid#Submitting_simple_one-off_jobs_using_'jsub') 
 
-If you want to use the web app for labeling images locally, you need to point a webserver at `public_html` 
+If you want to use the web app for labeling images locally, you need to point a webserver at `public_html`
