@@ -1,8 +1,8 @@
 <?php
 
 $config = array_merge(
-	parse_ini_file( __DIR__ . '/../config.ini', true ),
-	parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+    parse_ini_file( __DIR__.'/../config.ini', true ),
+    file_exists(__DIR__ . '/../replica.my.cnf') ? parse_ini_file( __DIR__ . '/../replica.my.cnf', true ) : []
 );
 $mysqli = new mysqli( $config['db']['host'], $config['client']['user'],
 	$config['client']['password'], $config['db']['dbname'] );
