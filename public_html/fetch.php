@@ -1,8 +1,8 @@
 <?php
 
 $config = array_merge(
-	parse_ini_file( __DIR__ . '/../config.ini', true ),
-	parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
+	parse_ini_file( __DIR__.'/../config.ini', true ),
+	file_exists(__DIR__ . '/../replica.my.cnf') ? parse_ini_file( __DIR__ . '/../replica.my.cnf', true ) : []
 );
 $mysqli = new mysqli( $config['db']['host'], $config['client']['user'],
 	$config['client']['password'], $config['db']['dbname'] );
@@ -13,7 +13,8 @@ if ( $mysqli->connect_error ) {
 
 $maxId = $mysqli->query(
 	'select max(id) as id
-	from results_by_component'
+	from ratedSearchResult
+	WHERE rating IS NULL'
 );
 if ( $maxId === false ) {
 	throw new Exception( 'No images exist' );
@@ -21,9 +22,9 @@ if ( $maxId === false ) {
 $maxId = intval( $maxId->fetch_assoc()['id'] );
 
 $result = $mysqli->query(
-	'select id, term, file_page, image_url
-	from results_by_component
-	where rating is null and skipped=0 and id >= '. rand( 0, $maxId ) .'
+	'select id, searchTerm, language, result
+	from ratedSearchResult
+	where rating is null and id >= '. rand( 0, $maxId ) .'
 	order by id limit 1'
 );
 

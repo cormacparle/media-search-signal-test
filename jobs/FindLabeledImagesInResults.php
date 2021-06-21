@@ -25,13 +25,14 @@ class FindLabeledImagesInResults extends GenericJob {
         $this->log( 'Begin #' . $searchId . ': ' . $this->config['description'] );
         foreach ( $this->getSearchTerms() as $searchTerm ) {
             $this->log( 'Searching ' . $searchTerm['term'] . ' in ' . $searchTerm['language'] );
-            $results = $this->httpGETJson(
-                $this->config['search']['baseUrl'].$this->config['searchurl'],
-                $searchTerm['term'],
-                $searchTerm['language']
-            );
-            $this->processResults( $searchTerm['term'], $searchTerm['language'],
-                $results, $searchId );
+            $searchUrl = $this->config['search']['baseUrl'].$this->config['searchurl'];
+            try {
+                $results = $this->httpGETJson( $searchUrl, $searchTerm['term'], $searchTerm['language'] );
+                $this->processResults( $searchTerm['term'], $searchTerm['language'],
+                    $results, $searchId );
+            } catch ( \Exception $e ) {
+                $this->log( "Failed to fetch {$searchTerm['language']} results for {$searchTerm['term']} at $searchUrl\n" );
+            }
         }
         $this->log( 'End #' . $searchId . ': ' . $this->config['description'] );
         return $searchId;
@@ -47,7 +48,7 @@ class FindLabeledImagesInResults extends GenericJob {
 
     private function getSearchTerms() : array {
         $searchTerms = [];
-        $query = 'select distinct searchTerm, language from ratedSearchResult';
+        $query = 'select distinct searchTerm, language from ratedSearchResult where rating is not null';
         if ( isset( $this->config['tag'] ) ) {
             $query .= ' join ratedSearchResult_tag ' .
                 'on ratedSearchResult_tag.ratedSearchResultId=ratedSearchResult.id ' .

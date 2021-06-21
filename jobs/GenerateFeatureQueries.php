@@ -69,13 +69,13 @@ class GenerateFeatureQueries {
             $this->log( 'Creating query for ' . $searchTermsRow[1] );
             $titles = [];
             $labeledImages = $this->db->query(
-                'select distinct file_page from results_by_component where ' .
-                'term ="' . $this->db->real_escape_string( $searchTermsRow[1] ) . '" and ' .
+                'select result from ratedSearchResult where ' .
+                'searchTerm ="' . $this->db->real_escape_string( $searchTermsRow[1] ) . '" and ' .
                 'rating is not null'
             );
             while ( $labeledImage = $labeledImages->fetch_object() ) {
-                $title = trim( $labeledImage->file_page );
-                $titleNoNamespace = str_replace( '_', ' ', substr( $title, 5 ) );
+                $title = trim( $labeledImage->result );
+                $titleNoNamespace = preg_replace( '/.+:/', '', $title );
                 $titles[] = addcslashes( $titleNoNamespace, '"' );
             }
             if ( count( $titles ) > 0 ) {

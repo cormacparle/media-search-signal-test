@@ -1,0 +1,55 @@
+<html>
+<head>
+    <title>Bulk classified data submission</title>
+    <style>
+        label {
+            display: block;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        label span {
+            font-size: 15px;
+            font-weight: normal;
+            font-style: italic;
+        }
+        input:not([type=submit]), textarea {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+<form method="POST" action="submit.php">
+    <h1>Bulk labeled data submission</h1>
+
+    <label for="term">Search term</label>
+    <input type="text" name="term" id="term" placeholder="My search term" />
+
+    <label for="language">Language</label>
+    <input type="text" name="language" id="language" placeholder="Language abbreviation" value="en" />
+
+    <label for="tags">Tags <span>(optional, 1 per line)</span></label>
+    <textarea name="tags" id="tags" rows="2"></textarea>
+
+    <label for="good">Good <span>(list of titles with File: prefix & spaces instead of underscores, 1 per line)</span></label>
+    <textarea name="1" id="good" rows="10" placeholder="File:First good file.jpg
+File:Another good match.png
+..."></textarea>
+
+    <label for="indifferent">Indifferent <span>(list of titles with File: prefix & spaces instead of underscores, 1 per line)</span></label>
+    <textarea name="0" id="indifferent" rows="10" placeholder="File:First indifferent file.jpg
+File:Another indifferent match.png
+..."></textarea>
+
+    <label for="poor">Poor <span>(list of titles with File: prefix & spaces instead of underscores, 1 per line)</span></label>
+    <textarea name="-1" id="poor" rows="10"placeholder="File:First poor file.jpg
+File:Another poor match.png
+..."></textarea>
+
+    <input type="submit" value="Submit">
+</form>
+<script>
+
+</script>
+</body>
+</html>

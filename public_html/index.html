@@ -2,6 +2,11 @@
 <head>
     <title>Image relevance classifier</title>
     <style>
+        .bulkwarning {
+            padding: 20px;
+            background-color: #FCA5A5;
+            font-weight: bold;
+        }
         .term {
             font-weight: bold;
         }
@@ -54,10 +59,14 @@
         }
     </style>
     <template>
+        <div class="bulkwarning">
+            <a href="bulk.html">Click here to submit bulk data</a> (or ignore this warning if you want to classify images)
+        </div>
+
         <h1>Search for &quot;<span class="term"></span>&quot;</h1>
         <p>Help us understand what drives good image search results by evaluating whether the image below is a good match for the term &quot;<span class="term"></span>&quot;.</p>
         <h2>
-            <a class="commons_url file_page" href="https://commons.wikimedia.org/" target="_blank"></a></li>
+            <a class="commons_url file_page" href="https://commons.wikimedia.org/" target="_blank"></a>
         </h2>
 
         <div class="container">
@@ -93,61 +102,68 @@
             // a lot of images fail to load (no thumb available -> thumb generation throttled)
             // return current image's response if we manage to decode the image; else fetch another
             const img = new Image();
-            img.src = data.image_url;
+            img.src = getThumbUrl( data.result );
             return img.decode().then( () => data ).catch( () => fetchImage() );
         }
-        async function submitImage( id, rating ) {
+        async function submitImage( term, language, title, rating ) {
             var formData = new FormData();
-            formData.append( 'id', id );
-            formData.append( 'rating', rating );
+            formData.append( 'term', term );
+            formData.append( 'language', language );
+            formData.append( rating, 'File:' + title );
             var request = new Request( 'submit.php', { method: 'POST', body: formData } );
             return window.fetch( request );
         }
-        async function skipImage( id ) {
+        async function skipImage( term, language, title ) {
             var formData = new FormData();
-            formData.append( 'id', id );
-            formData.append( 'skip', '1' );
+            formData.append( 'term', term );
+          formData.append( 'language', language );
+            formData.append( 'invalid', 'File:' + title );
             var request = new Request( 'submit.php', { method: 'POST', body: formData } );
             return window.fetch( request );
         }
-        function populateTemplate( data ) {
+        function getThumbUrl( title ) {
+          return 'https://commons.wikimedia.org/w/thumb.php?f=' + title.replace( /.+?:/, '' ).replace( / /g, '_' ) + '&w=1000';
+        }
+        function populateTemplate( data, counter ) {
             var template = document.querySelector( 'template' );
             var clone = template.content.cloneNode( true );
 
-            clone.querySelectorAll( '.term' ).forEach( node => node.textContent = data.term );
-            clone.querySelectorAll( '.image_url' ).forEach( node => node.src = data.image_url );
-
-            clone.querySelectorAll( '.bing_url' ).forEach( node => node.src = 'https://www.bing.com/images/search?form=HDRSC2&q=' + encodeURI( data.term ) );
-            clone.querySelectorAll( '.commons_url' ).forEach( node => node.href = 'https://commons.wikimedia.org/wiki/' + data.file_page );
-            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.file_page ).replace( /_/g, ' ' ) );
+            clone.querySelectorAll( '.term' ).forEach( node => node.textContent = data.searchTerm );
+            clone.querySelectorAll( '.image_url' ).forEach( node => node.src = getThumbUrl( data.result ) );
+            clone.querySelectorAll( '.bing_url' ).forEach( node => node.src = 'https://www.bing.com/images/search?form=HDRSC2&q=' + encodeURI( data.searchTerm ) );
+            clone.querySelectorAll( '.commons_url' ).forEach( node => node.href = 'https://commons.wikimedia.org/wiki/' + data.result.replace( / /g, '_' ) );
+            clone.querySelectorAll( '.file_page' ).forEach( node => node.textContent = decodeURI( data.result ) );
+            if ( counter > 0 ) {
+                clone.querySelectorAll( '.bulkwarning' ).forEach( node => node.remove() );
+            }
 
             return clone;
         }
-        async function render( data ) {
+        async function render( data, counter ) {
             // pre-fetch next image
             var next = fetchImage();
 
             // render current image
-            var template = populateTemplate( data );
+            var template = populateTemplate( data, counter );
 
             // bind event handlers
             template.querySelectorAll( '.button[name=rating]' ).forEach( node => node.addEventListener( 'click', e => {
-                submitImage( data.id, e.target.value );
+                submitImage( data.searchTerm, data.language, data.result, e.target.value );
                 while ( document.body.hasChildNodes() ) {
                     // remove nodes from body to prevent double submit
                     document.body.removeChild( document.body.childNodes[0] );
                 }
                 document.body.append( 'Loading...' );
-                next.then( render );
+                next.then( data => render( data, counter + 1 ) );
             } ) );
             template.querySelectorAll( '.button[name=skip]' ).forEach( node => node.addEventListener( 'click', () => {
-                skipImage( data.id );
+                skipImage( data.searchTerm, data.language, data.result );
                 while ( document.body.hasChildNodes() ) {
                     // remove nodes from body to prevent double submit
                     document.body.removeChild( document.body.childNodes[0] );
                 }
                 document.body.append( 'Loading...' );
-                next.then( render );
+                next.then( data => render( data, counter + 1 ) );
             } ) );
 
             // make sure to delay until <body> has been created
@@ -159,9 +175,10 @@
             } );
         }
 
-        fetchImage().then( render );
+        fetchImage().then( data => render( data, 0 ) );
     </script>
 </head>
 <body>
 Loading...
 </body>
+</html>

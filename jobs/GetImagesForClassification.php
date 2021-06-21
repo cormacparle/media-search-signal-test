@@ -2,209 +2,79 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-use mysqli;
+require 'GenericJob.php';
 
-class GetImagesForClassification {
+class GetImagesForClassification extends GenericJob {
 
-    private $db;
     private $searchUrl;
     private $searchTerms = [];
-    private $searchComponents = [
-        'statement',
-        'caption',
-        'title',
-        'category',
-        'heading',
-        'auxiliary_text',
-        'file_text',
-        'redirect.title',
-        'suggest',
-        'text',
-    ];
-    private $ch;
-    private $log;
 
-    public function __construct( array $config ) {
-        $this->db = new mysqli( $config['db']['host'], $config['client']['user'],
-            $config['client']['password'], $config['db']['dbname'] );
-        if ( $this->db->connect_error ) {
-            die('DB connection Error (' . $this->db->connect_errno . ') '
-                . $this->db->connect_error);
-        }
+    public function __construct( array $config = null ) {
+        parent::__construct( $config );
 
         $this->searchUrl = $config['search']['baseUrl'];
 
         $searchTermsFile =
             fopen( __DIR__ . '/../' . $config['search']['searchTermsFile'], 'r' );
         while ( $searchTermsRow = fgetcsv( $searchTermsFile, 1024, ',', '"' ) ) {
-            $this->searchTerms[] = $searchTermsRow[1];
+            $this->searchTerms[] = $searchTermsRow;
         }
         fclose( $searchTermsFile );
 
-        $this->ch = curl_init();
-        curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt( $this->ch, CURLOPT_COOKIEJAR, $config['search']['cookiePath'] );
-        curl_setopt( $this->ch, CURLOPT_COOKIEFILE, $config['search']['cookiePath'] );
-
-        $this->log = fopen(
-            __DIR__ . '/../' . $config['log']['getImages'],
-            'a'
-        );
-    }
-
-    public function __destruct() {
-        curl_close( $this->ch );
-        fclose( $this->log );
+        $this->setLogFileHandle( __DIR__ . '/../' . $this->config['log']['getImages'] );
     }
 
     public function run() {
-        $this->log( 'Begin' . "\n" );
-        foreach ( $this->searchTerms as $searchTerm ) {
-            $searchTerm = trim( $searchTerm );
-            foreach ( $this->searchComponents as $component ) {
-                $this->log( 'Searching ' . $searchTerm . ' using ' . $component . "\n" );
-                $this->storeResults(
-                    $searchTerm,
-                    $component,
-                    $this->search( $searchTerm, $component )
-                );
-            }
+        $this->log( "Begin\n" );
+        foreach ( $this->searchTerms as $data ) {
+            $searchTerm = trim( $data[1] );
+            $language = $data[2];
+            $this->log( "Searching $searchTerm\n" );
+            $searchUrl = $this->getSearchUrl( $searchTerm );
+            $searchResults = $this->httpGETJson( $searchUrl );
+            $this->storeResults( $searchTerm, $language, $searchResults );
         }
-        $this->log( 'End' . "\n" );
+        $this->log( "End\n" );
     }
 
-    public function log( string $msg ) {
-        fwrite( $this->log, date( 'Y-m-d H:i:s' ) . ': ' . $msg );
-    }
-
-    private function search( string $searchTerm, string $component ) : array {
-        curl_setopt( $this->ch, CURLOPT_URL, $this->getSearchUrl( $searchTerm, $component ) );
-        $result = curl_exec( $this->ch );
-        if ( curl_errno( $this->ch ) ) {
-            $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
-            die( 'Exiting because of curl error, see log for details.' );
-        }
-        $array = json_decode( $result, true );
-        return $array;
-    }
-
-    private function getSearchUrl( string $searchTerm, string $component ) : string {
+    private function getSearchUrl( string $searchTerm ) : string {
         return sprintf(
             $this->searchUrl . '/w/index.php?search=%s+filetype:bitmap&ns6=1&' .
-            'cirrusDumpResult&mediasearch=1&limit=100&normalizeFulltextScores=0%s',
-            urlencode( $searchTerm ),
-            $this->getBoostQueryParams( $component )
+            'cirrusDumpResult&mediasearch=1&limit=100&normalizeFulltextScores=0',
+            urlencode( $searchTerm )
         );
     }
 
-    private function getBoostQueryParams( string $componentToBoost ) {
-        return array_reduce(
-                $this->searchComponents,
-                function ( $carry, $component ) use ( $componentToBoost ) {
-                    if ( $component == $componentToBoost ) {
-                        return $carry . '&boost:' . $component . '=1';
-                    }
-                    return $carry . '&boost:' . $component . '=0';
-                },
-                ''
-            ) . '&boost:non-file_namespace_boost=0';
-    }
-
-    private function storeResults( string $searchTerm, string $component, array $searchResults ) {
+    private function storeResults( string $searchTerm, string $language, array $searchResults ) {
         $titles = [];
         if ( isset( $searchResults['__main__']['result']['hits']['hits'] ) ) {
-            foreach ( $searchResults['__main__']['result']['hits']['hits'] as $index => $result ) {
-                $titles[] = [
-                    'title' => $this->extractTitle( $result['_source'] ),
-                    'score' => $result['_score'],
-                ];
+            foreach ( $searchResults['__main__']['result']['hits']['hits'] as $result ) {
+                $titles[] = ['title' => $this->extractTitle( $result['_source'] )];
             }
         }
         if ( count( $titles ) > 0) {
-            $titleMetaData = $this->getFileMetadata( array_column( $titles, 'title' ) );
-            foreach ( $titles as $index => $title ) {
-                $query = 'insert into results_by_component set ' .
-                        ' position= ' . intval( $index + 1 ) . ', ' .
-                        ' term="' . $this->db->real_escape_string( $searchTerm ) . '", '.
-                        ' component="' . $this->db->real_escape_string( $component ) . '", ' .
-                        ' score=' .  floatval( $title['score'] ) . ', ' .
-                        ' file_page="' . $this->db->real_escape_string( $title['title'] ) . '", ' .
-                        ' image_url="' . $this->db->real_escape_string(
-                            $this->getImageUrl( $title['title'], $titleMetaData )
-                        ) . '"';
-                $this->db->query( $query  );
+            foreach ( $titles as $title ) {
+                $this->db->query(
+                    'INSERT INTO ratedSearchResult SET
+                    searchTerm = "' . $this->db->real_escape_string( $searchTerm ) . '",
+                    language = "' . $this->db->real_escape_string( $language ) . '",
+                    result = "' . $this->db->real_escape_string( $title['title'] ) . '"'
+                );
+                $this->db->query(
+                    'INSERT INTO ratedSearchResult_tag SET
+                    ratedSearchResultId = ' . intval( $this->db->insert_id ) . ',
+                    tagId=1'
+                );
             }
         }
     }
 
     private function extractTitle( array $source ) : string {
-        $title = str_replace( ' ', '_', $source['title'] );
+        $title = $source['title'];
         if ( $source['namespace'] > 0 ) {
             $title = $source['namespace_text'] . ':' . $title;
         }
         return $title;
-    }
-
-    private function getFileMetadata( array $titles ) : array {
-        $titleToMetadata = [];
-        $apiEndpoint =
-            'https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo' .
-            '&titles=%s&iiprop=url';
-
-        $offset = 0;
-        // max number of titles for imageinfo call is 50
-        while ( $titlesSlice = array_slice( $titles, $offset, 50 ) ) {
-            curl_setopt(
-                $this->ch,
-                CURLOPT_URL,
-                sprintf( $apiEndpoint, urlencode( implode( '|', $titlesSlice ) ) ) );
-            $jsonResult = curl_exec( $this->ch );
-            if ( curl_errno( $this->ch ) ) {
-                $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
-                die( 'Exiting because of curl error, see log for details.' );
-            }
-            $result = json_decode( $jsonResult, true );
-
-            $titleMap = [];
-            if ( isset( $result['query']['normalized'] ) ) {
-                foreach ( $result['query']['normalized'] as $fromTo ) {
-                    $titleMap[ $fromTo['to'] ] = $fromTo['from'];
-                }
-            }
-
-            foreach ( $result['query']['pages']  as $id => $page ) {
-                $title = $titleMap[ $page['title'] ] ?? $page['title'];
-                $titleToMetadata[ $title ] = [
-                    'url' => $page['imageinfo'][0]['url'] ?? '',
-                ];
-            }
-            $offset += 50;
-        }
-
-        return $titleToMetadata;
-    }
-
-    private function getImageUrl( string $title, array $metadata ) : string {
-        if ( !empty( $metadata[$title]['url'] ) ) {
-            return $this->getThumbnail( $metadata[$title]['url'] );
-        }
-        return 'https://commons.wikimedia.org/wiki/' . $title;
-    }
-
-    private function getThumbnail( string $url ) : string {
-        $src = str_replace( '/commons/', '/commons/thumb/', $url ) . '/';
-        if ( substr( $url, strrpos( $url, '.' ) + 1 ) == 'tif' ) {
-            $src .= 'lossy-page1-800px-thumbnail.tif.jpg';
-            return $src;
-        }
-        $src .= '800px-' . substr( $url, strrpos( $url, '/' ) + 1 );
-        if ( substr( $url, strrpos( $url, '.' ) + 1 ) == 'pdf' ) {
-            $src .= '.jpg';
-        }
-        if ( substr( $url, strrpos( $url, '.' ) + 1 ) == 'svg' ) {
-            $src .= '.png';
-        }
-        return $src;
     }
 }
 

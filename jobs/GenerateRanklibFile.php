@@ -114,11 +114,12 @@ class GenerateRanklibFile {
         if ( is_null( $ratingsByFile ) ) {
             $ratingsByFile = [];
             $ratings =
-                $this->db->query( 'select file_page,term,rating from results_by_component where ' .
-                    'rating is not null' );
+                $this->db->query(
+                    'select result, searchTerm, rating from ratedSearchResult where rating is not null'
+                );
             while ( $rating = $ratings->fetch_object() ) {
-                $filename = $this->stripTitleNamespace( $rating->file_page );
-                $ratingsByFile[strtolower( $rating->term )][$filename] = $rating->rating;
+                $filename = $this->stripTitleNamespace( $rating->result );
+                $ratingsByFile[strtolower( $rating->searchTerm )][$filename] = $rating->rating;
             }
         }
         return $ratingsByFile;
@@ -142,7 +143,7 @@ class GenerateRanklibFile {
         foreach ( $scores as $file => $scoreArray ) {
             $rating = $ratingsByFile[strtolower( $searchTerms[$queryId + 1] )][ $file ] ?? null;
             if ( is_null( $rating ) ) {
-                var_dump( $queryId, $ratingsByFile[strtolower( $searchTerms[$queryId + 1] )], 
+                var_dump( $queryId, $ratingsByFile[strtolower( $searchTerms[$queryId + 1] )],
                     $file, $scoreArray );
                 die( "Rating for " . $file . " for " . $searchTerms[$queryId + 1] . " not found.\n" );
             }
@@ -158,7 +159,7 @@ class GenerateRanklibFile {
     }
 
     private function stripTitleNamespace( string $titleString ) : string {
-        return str_replace( '_', ' ', substr( trim( $titleString ), 5 ) );
+        return preg_replace( '/.+:/', '', trim( $titleString ) );
     }
 
     public function log( string $msg ) {
