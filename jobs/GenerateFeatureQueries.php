@@ -48,7 +48,7 @@ class GenerateFeatureQueries {
         }
 
         $this->searchTerms =
-            file( __DIR__ . '/../' . $config['search']['searchTermsWithEntitiesFile'] );
+            file( __DIR__ . '/../' . $config['searchTermsWithEntitiesFile'] );
 
         $this->log = fopen(
             __DIR__ . '/../' . $config['log']['generateFeatureQueries'],
@@ -97,7 +97,7 @@ class GenerateFeatureQueries {
     }
 }
 
-$options = getopt( '', [ 'queryJsonGenerator:' ] );
+$options = getopt( '', [ 'queryJsonGenerator:', 'searchTermsWithEntitiesFile:' ] );
 $config = array_merge(
     parse_ini_file( __DIR__ . '/../config.ini', true ),
     parse_ini_file( __DIR__ . '/../replica.my.cnf', true ),

@@ -98,12 +98,15 @@
             var request = new Request( 'fetch.php', { method: 'GET' } );
             var response = await window.fetch( request );
             var data = await response.json();
-
-            // a lot of images fail to load (no thumb available -> thumb generation throttled)
-            // return current image's response if we manage to decode the image; else fetch another
-            const img = new Image();
-            img.src = getThumbUrl( data.result );
-            return img.decode().then( () => data ).catch( () => fetchImage() );
+            if ( data.error ) {
+            	alert( data.error );
+            } else {
+	            // a lot of images fail to load (no thumb available -> thumb generation throttled)
+	            // return current image's response if we manage to decode the image; else fetch another
+	            const img = new Image();
+	            img.src = getThumbUrl( data.result );
+	            return img.decode().then( () => data ).catch( () => fetchImage() );
+            }
         }
         async function submitImage( term, language, title, rating ) {
             var formData = new FormData();
@@ -116,7 +119,7 @@
         async function skipImage( term, language, title ) {
             var formData = new FormData();
             formData.append( 'term', term );
-          formData.append( 'language', language );
+            formData.append( 'language', language );
             formData.append( 'invalid', 'File:' + title );
             var request = new Request( 'submit.php', { method: 'POST', body: formData } );
             return window.fetch( request );

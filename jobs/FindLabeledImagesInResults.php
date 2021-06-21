@@ -2,8 +2,12 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-require 'GenericJob.php';
+require_once 'GenericJob.php';
 
+/**
+ * Searches commons for all the search terms that we have for our labeled results, and stores
+ * any labeled images that are found, along with their rating
+ */
 class FindLabeledImagesInResults extends GenericJob {
 
     public function __construct( array $config = [] ) {
@@ -55,6 +59,7 @@ class FindLabeledImagesInResults extends GenericJob {
                 'join tag on ratedSearchResult_tag.tagId=tag.id ' .
                 ' where tag.text="' . $this->dbEscape( $this->config['tag'] ). '"';
         }
+        $query .= ' limit 10';
         $searchTermResults = $this->db->query( $query );
         while ( $row = $searchTermResults->fetch_assoc() ) {
             $searchTerms[] = [
@@ -76,6 +81,7 @@ class FindLabeledImagesInResults extends GenericJob {
             'insert into resultset set ' .
                 'searchId=' . intval( $searchId ) . ', ' .
                 'term="' .  $this->db->real_escape_string( $searchTerm ) . '", ' .
+                'language="' .  $this->db->real_escape_string( $language ) . '", ' .
                 'resultCount=' . intval( count( $hits ) )
             );
             $resultsetId = $this->db->insert_id;

@@ -16,23 +16,33 @@ $maxId = $mysqli->query(
 	from ratedSearchResult
 	WHERE rating IS NULL'
 );
-if ( $maxId === false ) {
-	throw new Exception( 'No images exist' );
+
+
+try {
+    if ( $maxId === false ) {
+        throw new \Exception( 'No images exist' );
+    }
+    $maxId = intval( $maxId->fetch_assoc()['id'] );
+
+    $result = $mysqli->query( 'select id, searchTerm, result, language
+        from ratedSearchResult
+        where rating is null and id >= ' . rand( 0, $maxId ) . '
+        order by id limit 1' );
+
+    $mysqli->close();
+
+    if ( $result === false ) {
+        throw new \Exception( 'No images found' );
+    }
+    $data = $result->fetch_assoc();
+    if ( !$data ) {
+        throw new \Exception( 'No images found' );
+    }
+
+    header( 'Content-Type: application/json' );
+    echo json_encode( $data );
+} catch ( \Exception $e ) {
+    header( $_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500 );
+    header( 'Content-Type: application/json' );
+    echo json_encode( [ "error" => $e->getMessage() ] );
 }
-$maxId = intval( $maxId->fetch_assoc()['id'] );
-
-$result = $mysqli->query(
-	'select id, searchTerm, language, result
-	from ratedSearchResult
-	where rating is null and id >= '. rand( 0, $maxId ) .'
-	order by id limit 1'
-);
-
-$mysqli->close();
-
-if ( $result === false ) {
-	throw new Exception( 'No image found' );
-}
-
-header('Content-Type: application/json');
-echo json_encode( $result->fetch_assoc() );

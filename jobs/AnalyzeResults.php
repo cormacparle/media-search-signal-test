@@ -2,34 +2,18 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-use mysqli;
+require_once 'GenericJob.php';
 
-class AnalyzeResults {
+/**
+ * Calculates search quality metrics based on our labeled search results, and outputs them to stdout
+ */
+class AnalyzeResults extends GenericJob {
 
-    private $db;
     private $searchId;
-    private $out;
 
-    public function __construct( array $config, int $searchId ) {
-        $this->db = new mysqli(
-            $config['db']['host'],
-            $config['client']['user'],
-            $config['client']['password'],
-            $config['db']['dbname']
-        );
-        if ( $this->db->connect_error ) {
-            die('DB connection Error (' . $this->db->connect_errno . ') '
-                . $this->db->connect_error);
-        }
-        $this->out = fopen(
-            __DIR__ . '/../out/AnalyzeResults_' . $searchId . '.csv',
-            'w'
-        );
-        $this->searchId = $searchId;
-    }
-
-    public function __destruct() {
-        fclose( $this->out );
+    public function __construct( array $config ) {
+        parent::__construct( $config );
+        $this->searchId = $config['searchId'];
     }
 
     public function run() {
@@ -39,11 +23,6 @@ class AnalyzeResults {
         if ( count( $resultsets ) === 0 ) {
             die( "ERROR: no results found with for search id " . $this->searchId . "\n");
         }
-
-        fwrite(
-            $this->out,
-            "Term,F1Score,Precision@10,Precision@25,Precision@50,Precision@100,Recall\n"
-        );
 
         $truePositives = $falsePositives = $falseNegatives = 0;
         $truePositivesAt10 = $truePositivesAt25 = $truePositivesAt50 = $truePositivesAt100 = 0;
@@ -86,16 +65,6 @@ class AnalyzeResults {
             $precisionAt50 = $this->calculatePrecision( $truePositiveAt50, $falsePositiveAt50 );
             $precisionAt100 = $this->calculatePrecision( $truePositiveAt100, $falsePositiveAt100 );
 
-            fwrite( $this->out,
-                $resultset['term'] . "," .
-                ( $f1Score ?? '/' ) . "," .
-                ( $precisionAt10 ?? '/' ) . "," .
-                ( $precisionAt25 ?? '/' ) . "," .
-                ( $precisionAt50 ?? '/' ) . "," .
-                ( $precisionAt100 ?? '/' ) . "," .
-                ( $recall ?? '/' ) . "\n"
-            );
-
             // because the amount of known results varies greatly among resultsets,
             // we'll use the micro-average method to calculate the overall f1score
             // (if one resultset contains only 1 known value, it shouldn't have the
@@ -125,20 +94,6 @@ class AnalyzeResults {
         $precisionAt25 = $this->calculatePrecision( $truePositivesAt25, $falsePositivesAt25 );
         $precisionAt50 = $this->calculatePrecision( $truePositivesAt50, $falsePositivesAt50 );
         $precisionAt100 = $this->calculatePrecision( $truePositivesAt100, $falsePositivesAt100 );
-
-        fwrite(
-            $this->out,
-            "OVERALL," .
-            // overall f1score is not an arithmetic average of the individual f1scores,
-            // but a calculation based on the harmonic means of all precision &
-            // recall values, so that it's more sensitive to extremes
-            ( $f1Score ?? '/' ) . "," .
-            ( $precisionAt10 ?? '/' ) . "," .
-            ( $precisionAt25 ?? '/' ) . "," .
-            ( $precisionAt50 ?? '/' ) . "," .
-            ( $precisionAt100 ?? '/' ) . "," .
-            ( $recall ?? '/' ) . "\n"
-        );
 
         return '' .
 	        'F1 Score      | ' . ( $f1Score ?? '/' ) . "\n".
@@ -226,23 +181,13 @@ class AnalyzeResults {
     }
 }
 
-$config = parse_ini_file( __DIR__ . '/../config.ini', true );
-if ( file_exists( __DIR__ . '/../replica.my.cnf' ) ) {
-    $config = array_merge(
-        $config,
-        parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-    );
-}
-
-$options = getopt( '', [ 'searchId:', 'description::' ] );
-if ( isset( $options['searchId'] ) ) {
-    $searchId = $options['searchId'];
-} else {
+$config = getopt( '', [ 'searchId:', 'description::' ] );
+if ( !isset( $config['searchId'] ) ) {
     $findLabeledImagesJob = function() {
         include( __DIR__ . '/FindLabeledImagesInResults.php' );
         return $searchId;
     };
-    $searchId = $findLabeledImagesJob();
+    $config['searchId'] = $findLabeledImagesJob();
 }
-$job = new AnalyzeResults( $config, $searchId );
+$job = new AnalyzeResults( $config );
 echo $job->run();

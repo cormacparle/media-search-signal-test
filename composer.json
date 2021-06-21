@@ -1,5 +1,7 @@
 {
 	"require": {
-		"mustache/mustache": ">=2.13.0"
+		"mustache/mustache": ">=2.13.0",
+		"ext-mbstring": "*",
+		"ext-http": "*"
 	}
 }
