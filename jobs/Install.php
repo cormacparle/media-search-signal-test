@@ -15,7 +15,7 @@ class Install extends GenericJob {
         $sql[] = file_get_contents(__DIR__.'/../sql/ratedSearchResult.sql');
         $sql[] = file_get_contents(__DIR__.'/../sql/labeled_images_in_results.sql');
         if ($this->config['populate']) {
-            $sql[] = file_get_contents(__DIR__.'/../sql/ratedSearchResult_20210509.sql');
+            $sql[] = file_get_contents(__DIR__.'/../sql/ratedSearchResult.latest.sql');
         }
 
         $this->db->multi_query(implode("\n", $sql));
