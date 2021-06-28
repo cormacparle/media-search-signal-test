@@ -2,7 +2,7 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-require 'GenericJob.php';
+require_once 'GenericJob.php';
 
 /**
  * Finds wikidata items corresponding to the search terms in ratedSearchResult, and outputs then
@@ -57,11 +57,12 @@ class GenerateSearchTermsWithEntitiesFile extends GenericJob {
                 implode(
                     ",",
                     array_merge(
-                        [ $searchTerm['term'], $searchTerm['language'] ],
+                        [ $count, $searchTerm['term'], $searchTerm['language'] ],
                         $entities
                     )
                 ) . "\n"
             );
+            $count++;
         }
         $this->log( 'End' . "\n" );
     }
