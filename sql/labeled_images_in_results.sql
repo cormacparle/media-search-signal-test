@@ -13,6 +13,7 @@ create table resultset (
   id int not null auto_increment,
   searchId int not null,
   term varchar(255) not null,
+  language varchar(5) not null,
   resultCount int not null,
   primary key (id),
   foreign key (searchId) references search(id)

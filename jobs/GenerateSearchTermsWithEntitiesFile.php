@@ -2,72 +2,75 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-class GenerateSearchTermsWithEntitiesFile {
+require_once 'GenericJob.php';
+
+/**
+ * Finds wikidata items corresponding to the search terms in ratedSearchResult, and outputs then
+ * with the search term and language to the specified output file
+ */
+class GenerateSearchTermsWithEntitiesFile extends GenericJob {
 
     private $entitySearchBaseUrl;
-    private $searchTerms;
-    private $ch;
-    private $log;
     private $out;
 
-    public function __construct( array $config ) {
-        $this->entitySearchBaseUrl = $config['search']['entitySearchBaseUrl'];
-
-        $searchTermsFile =
-            fopen( __DIR__ . '/../' . $config['search']['searchTermsFile'], 'r' );
-        while ( $searchTermsRow = fgetcsv( $searchTermsFile, 1024, ',', '"' ) ) {
-            $this->searchTerms[] = $searchTermsRow;
-        }
-        fclose( $searchTermsFile );
-
-        $this->ch = curl_init();
-        curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
-
-        $this->log = fopen(
-            __DIR__ . '/../' . $config['log']['generateSearchTermsWithEntitiesFile'],
-            'a'
-        );
+    public function __construct( array $config = [] ) {
+        parent::__construct( $config );
+        $this->setLogFileHandle( __DIR__ . '/../' . $this->config['log']['generateSearchTermsWithEntitiesFile'] );
+        $this->entitySearchBaseUrl = $this->config['search']['entitySearchBaseUrl'];
         $this->out = fopen(
-            __DIR__ . '/../' . $config['search']['searchTermsWithEntitiesFile'],
-            'a'
+            __DIR__ . '/../' . $this->config['outputFile'],
+            'w'
         );
     }
 
-    public function __destruct() {
-        curl_close( $this->ch );
-        fclose( $this->log );
+    private function getSearchTerms() : array {
+        $searchTerms = [];
+        $query = 'select distinct searchTerm,language from ratedSearchResult where rating is not null';
+        if ( isset( $this->config['tag'] ) ) {
+            $query .= ' join ratedSearchResult_tag ' .
+                'on ratedSearchResult_tag.ratedSearchResultId=ratedSearchResult.id ' .
+                'join tag on ratedSearchResult_tag.tagId=tag.id ' .
+                ' where tag.text="' . $this->dbEscape( $this->config['tag'] ). '"';
+        }
+        $searchTermResults = $this->db->query( $query );
+        while ( $row = $searchTermResults->fetch_assoc() ) {
+            $searchTerms[] = [
+                'term' => trim( $row['searchTerm'] ),
+                'language' => $row['language']
+            ];
+        }
+        return $searchTerms;
     }
 
     public function run() {
         $this->log( 'Begin' . "\n" );
-        foreach ( $this->searchTerms as $searchTermArray ) {
-            $searchTerm = trim( $searchTermArray[1] );
-            $this->log( 'Getting entities for ' . $searchTerm );
+        $count = 1;
+        foreach ( $this->getSearchTerms() as $searchTerm ) {
+            $this->log( 'Searching ' . $searchTerm['term'] . ' in ' . $searchTerm['language'] );
             $entities = array_pad(
-                $this->getEntities( $searchTerm ),
+                $this->getEntities( $searchTerm['term'], $searchTerm['language'] ),
                 50,
                 'NO_ENTITY'
             );
             fwrite(
                 $this->out,
-                implode( ",", array_merge( $searchTermArray, $entities ) ) . "\n"
+                implode(
+                    ",",
+                    array_merge(
+                        [ $count, $searchTerm['term'], $searchTerm['language'] ],
+                        $entities
+                    )
+                ) . "\n"
             );
+            $count++;
         }
         $this->log( 'End' . "\n" );
     }
 
-    public function log( string $msg ) {
-        fwrite( $this->log, date( 'Y-m-d H:i:s' ) . ': ' . $msg . "\n" );
-    }
-
-    private function getEntities( string $searchTerm ) : array {
-        curl_setopt( $this->ch, CURLOPT_URL, $this->getGetEntitiesUrl( $searchTerm ) );
-        $result = curl_exec( $this->ch );
-        if ( curl_errno( $this->ch ) ) {
-            $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
-            die( 'Exiting because of curl error, see log for details.' );
-        }
-        $response = json_decode( $result, true );
+    private function getEntities( string $searchTerm, string $language ) : array {
+        $response = $this->httpGETJson(
+            $this->getGetEntitiesUrl( $searchTerm, $language )
+        );
         $transformedResponse = [];
         foreach ( $response['query']['search'] ?? [] as $index => $result ) {
             list( $title, $score ) = $this->transformResult( $result, $index );
@@ -78,7 +81,7 @@ class GenerateSearchTermsWithEntitiesFile {
         return array_keys( $transformedResponse );
     }
 
-    private function getGetEntitiesUrl( string $searchTerm ) : string {
+    private function getGetEntitiesUrl( string $searchTerm, string $language ) : string {
         $params = [
             'format' => 'json',
             'action' => 'query',
@@ -88,7 +91,7 @@ class GenerateSearchTermsWithEntitiesFile {
             'srlimit' => 50,
             'srqiprofile' => 'wikibase',
             'srprop' => 'snippet|titlesnippet|extensiondata',
-            'uselang' => 'en',
+            'uselang' => $language,
         ];
 
         return $this->entitySearchBaseUrl . '?' . http_build_query( $params );
@@ -134,9 +137,9 @@ class GenerateSearchTermsWithEntitiesFile {
     }
 }
 
-$config = array_merge(
-    parse_ini_file( __DIR__ . '/../config.ini', true ),
-    parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-);
-$job = new GenerateSearchTermsWithEntitiesFile( $config );
+$options = getopt( '', [ 'outputFile:' ] );
+if ( !isset( $options['outputFile'] ) ) {
+    die( "ERROR: you must specify a file to output to using --outputFile\n" );
+}
+$job = new GenerateSearchTermsWithEntitiesFile( $options );
 $job->run();

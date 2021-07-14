@@ -57,7 +57,7 @@ abstract class GenericJob {
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
         curl_setopt( $ch, CURLOPT_COOKIEJAR, $this->config['search']['cookiePath'] );
         curl_setopt( $ch, CURLOPT_COOKIEFILE, $this->config['search']['cookiePath'] );
-        curl_setopt( $ch, CURLOPT_USERAGENT, 'Image recommendations test data collector' );
+        curl_setopt( $ch, CURLOPT_USERAGENT, 'media-search-signal-text' );
 
         if ( count( $params ) > 0 ) {
             $url = sprintf(

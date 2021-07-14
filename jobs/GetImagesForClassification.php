@@ -4,6 +4,11 @@ namespace MediaSearchSignalTest\Jobs;
 
 require 'GenericJob.php';
 
+/**
+ * Reads the search terms plus language in the specific input file, fetches images corresponding
+ * to the search terms on commons, and stores the results with rating set to NULL in
+ * `ratedSearchResult`
+ */
 class GetImagesForClassification extends GenericJob {
 
     private $searchUrl;
@@ -12,10 +17,10 @@ class GetImagesForClassification extends GenericJob {
     public function __construct( array $config = null ) {
         parent::__construct( $config );
 
-        $this->searchUrl = $config['search']['baseUrl'];
+        $this->searchUrl = $this->config['search']['baseUrl'];
 
         $searchTermsFile =
-            fopen( __DIR__ . '/../' . $config['search']['searchTermsFile'], 'r' );
+            fopen( $config['searchTermsFile'], 'r' );
         while ( $searchTermsRow = fgetcsv( $searchTermsFile, 1024, ',', '"' ) ) {
             $this->searchTerms[] = $searchTermsRow;
         }
@@ -30,18 +35,19 @@ class GetImagesForClassification extends GenericJob {
             $searchTerm = trim( $data[1] );
             $language = $data[2];
             $this->log( "Searching $searchTerm\n" );
-            $searchUrl = $this->getSearchUrl( $searchTerm );
+            $searchUrl = $this->getSearchUrl( $searchTerm, $language );
             $searchResults = $this->httpGETJson( $searchUrl );
             $this->storeResults( $searchTerm, $language, $searchResults );
         }
         $this->log( "End\n" );
     }
 
-    private function getSearchUrl( string $searchTerm ) : string {
+    private function getSearchUrl( string $searchTerm, string $language ) : string {
         return sprintf(
             $this->searchUrl . '/w/index.php?search=%s+filetype:bitmap&ns6=1&' .
-            'cirrusDumpResult&mediasearch=1&limit=100&normalizeFulltextScores=0',
-            urlencode( $searchTerm )
+            'cirrusDumpResult&limit=100&uselang=%s',
+            urlencode( $searchTerm ),
+            $language
         );
     }
 
@@ -78,12 +84,10 @@ class GetImagesForClassification extends GenericJob {
     }
 }
 
-$config = parse_ini_file( __DIR__ . '/../config.ini', true );
-if ( file_exists( __DIR__ . '/../replica.my.cnf' ) ) {
-    $config = array_merge(
-        $config,
-        parse_ini_file( __DIR__ . '/../replica.my.cnf', true )
-    );
+$options = getopt( '', [ 'searchTermsFile:' ] );
+if ( !isset( $options['searchTermsFile'] ) || !file_exists( $options['searchTermsFile'] ) ) {
+    die( "ERROR: you must specify an existing file as a source for search terms using --searchTermsFile\n" );
 }
-$job = new GetImagesForClassification( $config );
+
+$job = new GetImagesForClassification( $options );
 $job->run();

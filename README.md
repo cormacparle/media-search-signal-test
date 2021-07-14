@@ -1,36 +1,20 @@
 # media-search-signal-test
 
-Various tools for helping to improve media search on Wikimedia Commons by gathering labeled data
+Various tools for helping to improve media search on Wikimedia Commons by using labeled data
 
-## Gather and label search results
-
-The first thing we set out to do is gather lots of image results from existing commons search, and classify them as good or bad. This allows us to do a bunch of analysis, and tune our search algorithm. 
-
-The script to gather search results has been run on toolforge, and the interface for labeling them is public at https://media-search-signal-test.toolforge.org/
-
-Also there's a mysqldump of the labeled data as of June 2021 available in this repo in `sql/`
-
-#### jobs/GetImagesForClassification.php
-
-Search commons using MediaSearch for all the search terms in input/searchTerms.csv (a mixture of the most popular search terms and a selection of random search terms), and store the results along with their score from elasticsearch.
-
-#### public_html/
-
-A little web app where the user is presented with a random image from the stored search results and rates it as good, bad or indifferent
-
-## Use the labeled images to compare search algorithms
+## 1. Use the labeled images to compare search algorithms
 
 We need a quick way to compare search algorithms without having to A/B test, so we made some scripts to do comparisons by running a searches for the search terms used to get the labeled images in the first place, then counting the labeled images in the results and calculating some metrics like precision, recall and f1score. 
 
 If you want to run this locally:
-* there's a dump of the labeled image data we have gathered on toolforge in `sql/ratedSearchResult_20210509.sql`, so load that
-* `php jobs/AnalyzeResults.php` ... this will run default mediasearch on commons, analyse the results, and output to the `out/` directory
+* load the existing labeled data into your database using `php jobs/Install.php --populate` (note this will delete any labeled data already in your database)
+* `php jobs/AnalyzeResults.php` ... this will run default mediasearch on commons, analyse the results and output them to stdout
 
 More detailed information below ...
 
 #### jobs/FindLabeledImagesInResults.php
 
-Search commons using MediaSearch for all the search terms in input/searchTerms.csv, then find all the labeled images in each resultset and store them
+Search commons using MediaSearch for all the search terms in `ratedSearchResult`, then find all the labeled images in each resultset and store them
 
 The point of this is to allow the user to do a search and store labeled images from the search, in order to allow the results of different searches to be compared.
 
@@ -41,7 +25,7 @@ Results are stored in the tables
 
 Params
 * `description` A description to be stored in the `search` table. Defaults to the date and time.
-* `searchUrl` A custom search url. Defaults to MediaSearch (query builder + rescore) in English.
+* `searchUrl` A custom search url. Defaults to standard MediaSearch (query builder + rescore)
 
 #### jobs/AnalyzeResults.php
 
@@ -55,76 +39,76 @@ Params
 * `description` A description to be stored in the `search` table. Defaults to the date and time (only used if `searchId` is not provided).
 * `searchId` The id of the stored search that we want to analyse.
 
-#### jobs/Install.php
-
-(Re)installs the tables used by above scripts.
-
-Params
-* `populate` If provided, the tables will be populated with a dump of the labeled image data we have gathered on toolforge.
-
 #### runSearches.php
 
-A convenience script that does analysis on a bunch of searches.
+A convenience script that runs `jobs/AnalyzeResults.php` analysis on a pre-defined bunch of searches, and outputs the results.
 
-## Use the labeled images to create a dataset for training an elasticsearch model
+## 2. Use the labeled images to create a dataset for training an elasticsearch model
 
 elasticsearch provides a thing called "learning to rank", where it applies machine learning to labeled data in order to improve search results ranking. See https://elasticsearch-learning-to-rank.readthedocs.io/en/latest/index.html 
 
-The basic steps for doing learning to rank are:
+### Quick version
+
+elasticsearch uses a textfile in ranklib format as an input for model-building. To generate a ranklib file using the labeled data in this repo, with elasticsearch queries corresponding to those used on production commons on Jan 27 2021:
+
+1. Point `https://127.0.0.1:9243/` at a replica of the production wikimedia-commons elasticsearch index via an ssh tunnel using `ssh -n -L127.0.0.1:9243:cloudelastic1001.wikimedia.org:9243 mwdebug1002.eqiad.wmnet "sleep 36000"` 
+2. Run `php createRankLib.php`
+
+The ranklib file will be output to `out/MediaSearch_20210127.tsv`
+
+### Long version
+
+To create a training dataset for learning-to-rank in elasticsearch we need to:
 1. Create a "featureset" in elasticsearch. A featureset is basically a set of additional fields with their own query params that you tack on to a normal elasticsearch query, and you'll get back the scores for each field in your response.
 2. Prepare elasticsearch queries for all the labeled data you have for each search term, plus the featureset stuff tacked on.
 3. Run each query, and munge the responses into a format that elasticsearch can use for model-building (ranklib format).
-4. Build a model using your data in elasticsearch.
-5. Search using the model.
-
-Steps 4 and 5 are outside the scope of this repo, but we have tools to do steps 1-3.
 
 #### Step 1: the featureset
 
-An example featureset is in `input/featureset.MediaSearch_20210127.json`. This needs to be sent to your elasticsearch instance via a POST request (see the docs referenced above)
+Create an elasticsearch featureset and send it to your elasticsearch instance via a POST request (see the docs referenced above)
 
-#### Step 2: preparing the queries
+The example featureset `input/featureset.MediaSearch_20210127.json` corresponds to the elasticsearch query generated by WikibaseMediaInfo. 
 
-##### search terms
+#### Step 2: prepare the queries
 
-The example featureset needs as inputs
-* a search term
-for so it can find things using structured data. 
+1. run `php jobs/GenerateSearchTermsWithEntities.php --outputFile="out/searchTermsWithEntities.csv` to generate a file containing all the labeled search terms and any corresponding wikidata items they might have
+2. run `php jobs/GenerateFeatureQueries.php --queryJsonGenerator="MediaSearchSignalTest\Jobs\MediaSearch_20210127" --searchTermsWithEntitiesFile="out/searchTermsWithEntities.csv"` 
 
-We already have search term and language in `input/searchTerms.csv` MediaSearch_20210127_1216.json and MediaSearch_20210127_1216.json
+The query json files will be output to `out/ltr/`
 
-We also have search term, language AND the `statement_keywords` strings in `input/searchTermsWithEntities.csv`, which was generated using `jobs/GenerateSearchTermsWithEntitiesFile.php`
+#### Step 3: run the queries, write the results in ranklib format
 
-##### query json
+Run `php jobs/GenerateRanklibFile.php --queryDir="out/ltr/"  --featuresetName=MediaSearch_20210127 --searchTermsWithEntitiesFile="out/searchTermsWithEntities.csv"`
 
-The script `jobs/GenerateFeatureQueries.php` reads the `searchTermsWithEntities.csv` file, and generates json for elasticsearch queries for all the labeled results for all the search terms.
+The script expects there to be an instance of elasticsearch at `https://127.0.0.1:9243/`. When running the script myself I set up an ssh tunnel to cloudelastic (a replica of the live search indices taht already has the featureset set up) using `ssh -n -L127.0.0.1:9243:cloudelastic1001.wikimedia.org:9243 mwdebug1002.eqiad.wmnet "sleep 36000"` - if you do the same the script should just work.
 
-To run the script you need to pass the param `queryJsonGenerator` which is the name of the class used to construct the query json for each set of labeled results/search terms. 
+## 3. Gather and label search results
 
-ATM there is just one class available - `MediaSearch_20210127` in the job php file itself, which corresponds to the example featureset . 
+#### jobs/GetImagesForClassification.php
 
-So, to create the queries, run `php jobs/GenerateFeatureQueries.php --queryJsonGenerator="MediaSearchSignalTest\Jobs\MediaSearch_20210127"` and the query json files will be output to `out/ltr/`.
+Use this to gather search results from wikimedia commons so they can be labeled via the web app. It searches commons for each term in the input file, and inserts the results into `ratedSearchResult` with `rating` set to null
 
-(note that because mysql select doesn't distinguish 'dali' from 'dalí' you'll have to adjust the json files MediaSearch_20210127_1216.json and MediaSearch_20210127_1287.json for those queries to work (or just remove them))
+Params
+* `searchTermsFile` A comma-separated file. First column is ignored, second should contain the search term, third should contain the language of the search term 
 
-### Step 3: creating the ranklib file
+#### public_html/
 
-The script `jobs/GenerateRanklibFile.php` generates a ranklib file that can be used to train a model in elasticsearch. 
+A little web app where the user is presented with a random image from the stored search results, and rates it as good, bad or indifferent
 
-Params:
-* `queryDir` ... should be `out/ltr/` if you used the default setting to create the queries in the last step
-* `featuresetName` ... will be MediaSearch_20210127 for the example featureset
+#### public_html/bulk.html
 
-The script expects there to be an instance of elasticsearch at `https://127.0.0.1:9243/`. When running the script myself I set up an ssh tunnel to cloudelastic (a replica of the live search indices) using `ssh -n -L127.0.0.1:9243:cloudelastic1001.wikimedia.org:9243 mwdebug1002.eqiad.wmnet "sleep 36000"` - if you do the same the script should just work.
+A form where you can enter a search term plus language with a list of good/bad/indifferent results. It gets inserted directly into the labeled data.
 
 ## Installation
 
 1. create a mysql db
 2. update `config.ini` to point at the right db
 3. run `composer update`
-4. run `php jobs/Install.php` (optionally with `--populate` parameter) to install the DB schema
+4. run `php jobs/Install.php` to install the DB schema (add the `--populate` param to populate the tables with existing labeled data)
 5. away you go
 
 A job can just be run via `php jobs/<filename>` or on toolforge it can be run using [`jsub`](https://wikitech.wikimedia.org/wiki/Help:Toolforge/Grid#Submitting_simple_one-off_jobs_using_'jsub') 
 
 If you want to use the web app for labeling images locally, you need to point a webserver at `public_html`
+
+

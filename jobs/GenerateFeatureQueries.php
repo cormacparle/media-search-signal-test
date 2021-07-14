@@ -2,9 +2,8 @@
 
 namespace MediaSearchSignalTest\Jobs;
 
-use mysqli;
-
-require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once 'GenericJob.php';
 
 interface QueryJsonCreator {
     public function createQueryString( array $searchTermsRow, array $titles ) :
@@ -31,46 +30,33 @@ class MediaSearch_20210127 implements QueryJsonCreator {
     }
 }
 
-class GenerateFeatureQueries {
+class GenerateFeatureQueries extends GenericJob {
 
-    private $db;
     private $searchTerms;
-    private $log;
     /** @var QueryJsonCreator  */
     private $queryStringGenerator;
 
     public function __construct( array $config ) {
-        $this->db = new mysqli( $config['db']['host'], $config['client']['user'],
-            $config['client']['password'], $config['db']['dbname'] );
-        if ( $this->db->connect_error ) {
-            die('DB connection Error (' . $this->db->connect_errno . ') '
-                . $this->db->connect_error);
-        }
+        parent::__construct( $config );
+        $this->setLogFileHandle( __DIR__ . '/../' . $this->config['log']['generateFeatureQueries'] );
 
         $this->searchTerms =
-            file( __DIR__ . '/../' . $config['search']['searchTermsWithEntitiesFile'] );
+            file( __DIR__ . '/../' . $this->config['searchTermsWithEntitiesFile'] );
 
-        $this->log = fopen(
-            __DIR__ . '/../' . $config['log']['generateFeatureQueries'],
-            'a'
-        );
-        $this->outputDir = __DIR__ . '/../' . $config['ltr']['queriesOutputDir'] . '/';
-        $this->queryStringGenerator = new $config['queryJsonGenerator'];
-    }
-
-    public function __destruct() {
-        fclose( $this->log );
+        $this->outputDir = __DIR__ . '/../' . $this->config['ltr']['queriesOutputDir'] . '/';
+        $this->queryStringGenerator = new $this->config['queryJsonGenerator'];
     }
 
     public function run() {
         $this->log( 'Begin' . "\n" );
         foreach ( $this->searchTerms as $index => $searchTermsRowString ) {
             $searchTermsRow = explode( ',', $searchTermsRowString );
-            $this->log( 'Creating query for ' . $searchTermsRow[1] );
+            $this->log( 'Creating query for ' . $searchTermsRow[1] . ' in ' . $searchTermsRow[2] );
             $titles = [];
             $labeledImages = $this->db->query(
                 'select result from ratedSearchResult where ' .
                 'searchTerm ="' . $this->db->real_escape_string( $searchTermsRow[1] ) . '" and ' .
+                'language ="' . $this->db->real_escape_string( $searchTermsRow[2] ) . '" and ' .
                 'rating is not null'
             );
             while ( $labeledImage = $labeledImages->fetch_object() ) {
@@ -80,7 +66,7 @@ class GenerateFeatureQueries {
             }
             if ( count( $titles ) > 0 ) {
                 $query = $this->queryStringGenerator->createQueryString( $searchTermsRow, $titles );
-                file_put_contents( $this->getOutputFilename( $index ), $query );
+                file_put_contents( $this->getOutputFilename( $searchTermsRow[0] ), $query );
             }
         }
         $this->log( 'End' . "\n" );
@@ -91,17 +77,8 @@ class GenerateFeatureQueries {
         return $this->outputDir . DIRECTORY_SEPARATOR .
             end( $classNameArray ) . '_' . $index  . '.json';
     }
-
-    private function log( string $msg ) {
-        fwrite( $this->log, date( 'Y-m-d H:i:s' ) . ': ' . $msg . "\n" );
-    }
 }
 
-$options = getopt( '', [ 'queryJsonGenerator:' ] );
-$config = array_merge(
-    parse_ini_file( __DIR__ . '/../config.ini', true ),
-    parse_ini_file( __DIR__ . '/../replica.my.cnf', true ),
-    $options
-);
-$job = new GenerateFeatureQueries( $config );
+$options = getopt( '', [ 'queryJsonGenerator:', 'searchTermsWithEntitiesFile:' ] );
+$job = new GenerateFeatureQueries( $options );
 $job->run();
