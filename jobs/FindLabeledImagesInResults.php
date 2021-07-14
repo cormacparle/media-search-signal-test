@@ -13,8 +13,8 @@ class FindLabeledImagesInResults extends GenericJob {
     public function __construct( array $config = [] ) {
         if ( !isset( $config['searchurl'] ) ) {
             $config['searchurl'] =
-                '/w/api.php?action=query&generator=search&gsrsearch=filetype:bitmap|drawing+%s' .
-                '&gsrlimit=max&gsroffset=0&gsrnamespace=6&format=json&uselang=%s&cirrusDumpResult';
+                '/w/api.php?action=query&list=search&srsearch=%s+filetype:bitmap&srnamespace=6' .
+                '&srqiprofile=empty&srlimit=max&uselang=%s&cirrusDumpResult';
         }
         if ( !isset( $config['description'] ) ) {
             $config['description'] = 'Search of ' . $config['searchurl'] . ' on ' .
@@ -59,7 +59,7 @@ class FindLabeledImagesInResults extends GenericJob {
                 'join tag on ratedSearchResult_tag.tagId=tag.id ' .
                 ' where tag.text="' . $this->dbEscape( $this->config['tag'] ). '"';
         }
-        $query .= ' limit 10';
+        //$query .= ' limit 10';
         $searchTermResults = $this->db->query( $query );
         while ( $row = $searchTermResults->fetch_assoc() ) {
             $searchTerms[] = [
