@@ -1,9 +1,14 @@
 <?php
 
 /**
- * Converts out/MediaSearch_20210127.tsv (ranklib format) into a csv with column names in the first
- * line. Also all "meh" ratings (with value 0) are dropped, and all -1 ratings are converted to
- * 0 (to make analysis in python easier)
+ * Converts ranklib format into a csv with column names in the first line.
+ *
+ * All "meh" ratings (with value 0) are dropped, and all -1 ratings are converted to 0 (to make
+ * analysis in python easier)
+ *
+ * Params:
+ * - ranklibFile ... a file in ranklib format for conversion
+ * - split ...
  */
 
 function removeColon( $field ) {
@@ -11,11 +16,20 @@ function removeColon( $field ) {
     return $value;
 }
 
-$fh = fopen( 'out/MediaSearch_20210127.tsv', 'r' );
-$output = fopen( 'out/MediaSearch_20210127.csv', 'w' );
+$options = getopt( '', [ 'ranklibFile:', 'split::' ] );
+if ( !isset( $options['ranklibFile'] ) || !file_exists( $options['ranklibFile'] ) ) {
+    die( "Please specify a valid ranklib file using --ranklibFile\n" );
+}
+if ( isset( $options['split'] ) && $options['split'] < 1 ) {
+    die( "Please specify a valid value (>=1) for --split\n" );
+}
+$outputFilename = str_replace( '.tsv', '.csv', $options['ranklibFile'] );
+
+$output = fopen( $outputFilename, 'w' );
 fputcsv(
     $output,
     [
+        'queryId',
         'rating',
         'descriptions.plain',
         'descriptions',
@@ -29,18 +43,29 @@ fputcsv(
         //'suggest.plain', NO SUCH FIELD, so the data is meaningless, so ignore
         'auxiliary_text',
         'auxiliary_text.plain',
-         'text',
+        'text',
         'text.plain',
         'statements'
     ],
     ","
 );
 
-while ( $line = fgetcsv( $fh, 0, "\t" ) ) {
+$ranklibAsArray = file( $options['ranklibFile'] );
+if ( $options['split'] != 1 ) {
+    $randomArrayKeys = array_rand(
+        $ranklibAsArray,
+        count($ranklibAsArray) / ( $options['split'] ?? 1)
+    );
+    shuffle($randomArrayKeys);
+} else {
+    $randomArrayKeys = array_keys( $ranklibAsArray );
+}
+
+foreach ( $randomArrayKeys as $key ) {
+    $line = str_getcsv( $ranklibAsArray[$key], "\t" );
     if ( $line[0] !== "0" ) {
-        fputcsv(
-            $output,
-            [
+        fputcsv( $output, [
+                removeColon( $line[1] ),
                 $line[0] < 1 ? 0 : 1,
                 removeColon( $line[2] ),
                 removeColon( $line[3] ),
@@ -57,9 +82,6 @@ while ( $line = fgetcsv( $fh, 0, "\t" ) ) {
                 removeColon( $line[14] ),
                 removeColon( $line[15] ),
                 removeColon( $line[16] ),
-            ],
-            ","
-        );
+            ], "," );
     }
 }
-echo "Done\n";
