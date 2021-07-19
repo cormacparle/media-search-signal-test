@@ -14,7 +14,7 @@ import sys
 
 ranklibFile = 'out/MediaSearch_20210127.tsv'
 
-trainingDataSize = "0.8"
+trainingDataSize = 0.8
 generateNewCsv = True
 try:
     opts, args = getopt.getopt(sys.argv[1:],"hx", [ "trainingDataSize=" ])
@@ -31,7 +31,7 @@ for opt, arg in opts:
         print('logreg.py -x --trainingDataSize={number <= 1}')
         print('')
         print('The option -x skips the transformation to csv, and uses the csv from the last run')
-        print('If trainingDataSize is set, the data will be trained on the first (total_rows)*trainingDataSize rows of the csv')
+        print('If trainingDataSize is set, the data will be trained on the first (total_rows)*trainingDataSize rows of the csv, and tested on the rows that follow')
         print('')
         sys.exit()
     elif opt == "--trainingDataSize":
