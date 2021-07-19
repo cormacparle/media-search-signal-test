@@ -85,7 +85,7 @@ X_test = testData.loc[:, dependent_variable_columns]
 #
 # Use RFE to reduce the number of dependent variables until we get all positive coefficients
 #
-# Optimise for AVERAGE PRECISION over the entire dataset
+# Optimise for AVERAGE PRECISION on the test data
 
 bestPrecision = 0
 coeffsWithBestPrecision = {}
