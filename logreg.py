@@ -91,9 +91,10 @@ X_test = testData.loc[:, dependent_variable_columns]
 # Optimise for AVERAGE PRECISION on the test data
 
 bestAP = 0
-bestPrecisionAt25 = 0
+bestPrecisionAtK = 0
 bestCoeffs = {}
 bestIntercept = 0
+k = 25
 for i in range(len(dependent_variable_columns), 1, -1):
     # find the most significant fields
     significantColumns  = []
@@ -117,14 +118,21 @@ for i in range(len(dependent_variable_columns), 1, -1):
     # - 2nd value is the probability that the sample should be in class "1" (i.e. it's a good image)
     y_pred_p = logreg.predict_proba(X_test)
 
+    # calculate precision@k
+    indices = np.argsort(-np.array(y_pred_p.T[1]))
+    y_test_sorted_by_score = [y_test.values.ravel()[i] for i in indices]
+    precisionatk = sum([1 if l==1 else 0 for l in y_test_sorted_by_score[:k]])/float(k)
+
     averagePrecision = metrics.average_precision_score(y_test, y_pred_p.T[1], average="micro")
     if (averagePrecision > bestAP):
         if ((len([x for x in model.coef_[0] if float(x) < 0])) == 0):
+            bestPrecisionAtK = precisionatk
             bestAP = averagePrecision
             bestCoeffs = coeffs
             bestIntercept = model.intercept_[0]
 
 print('Average precision score: {:.4f}'.format(bestAP))
+print('Precision@25: {:.4f}'.format(bestPrecisionAtK))
 print('Coefficients')
 print(bestCoeffs)
 print('Intercept')
