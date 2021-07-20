@@ -12,6 +12,8 @@ import statsmodels.api as smapi
 import subprocess
 import sys
 
+from pprint import pprint
+
 ranklibFile = 'out/MediaSearch_20210127.tsv'
 
 trainingDataSize = 0.8
@@ -46,8 +48,9 @@ if ( generateNewCsv == True ):
 # load the data from the csv file
 alldata = pd.read_csv( ranklibFile.replace( '.tsv', '.csv' ), header=0 )
 trainingData = alldata[:round(len(alldata)*trainingDataSize)]
-testData = alldata[round(len(alldata)*trainingDataSize) + 1:]
-print('Training on the first ' + str(round(len(alldata)*trainingDataSize)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
+testData = alldata[len(alldata) - 1000:]
+print('Training on the first ' + str(len(trainingData)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
+print('Testing on the last ' + str(len(testData)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
 logreg = LogisticRegression(fit_intercept=True, solver='liblinear')
 
 # NAMING CONVENTIONS
@@ -87,9 +90,10 @@ X_test = testData.loc[:, dependent_variable_columns]
 #
 # Optimise for AVERAGE PRECISION on the test data
 
-bestPrecision = 0
-coeffsWithBestPrecision = {}
-interceptWithBestPrecision = 0
+bestAP = 0
+bestPrecisionAt25 = 0
+bestCoeffs = {}
+bestIntercept = 0
 for i in range(len(dependent_variable_columns), 1, -1):
     # find the most significant fields
     significantColumns  = []
@@ -103,24 +107,26 @@ for i in range(len(dependent_variable_columns), 1, -1):
     X_train = trainingData.loc[:, significantColumns]
     X_test = testData.loc[:, significantColumns]
 
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, random_state=0)
-
     model = logreg.fit(X_train, y_train.values.ravel())
     coeffs = dict(zip(list(X.columns), model.coef_[0]))
 
     # optimise for average precision
     y_pred = logreg.predict(X_test)
+    # each y_pred_p row has 2 values
+    # - 1st value is the probability that the sample should be in class "0" (i.e. it's a bad image)
+    # - 2nd value is the probability that the sample should be in class "1" (i.e. it's a good image)
     y_pred_p = logreg.predict_proba(X_test)
-    precision = metrics.average_precision_score(y_test, y_pred_p.T[1], average="micro")
-    if precision > bestPrecision:
-        if (len([x for x in model.coef_[0] if float(x) < 0])) == 0:
-            bestPrecision = precision
-            coeffsWithBestPrecision = coeffs
-            interceptWithBestPrecision = model.intercept_[0]
 
-print('Best average precision score: {:.4f}'.format(bestPrecision))
+    averagePrecision = metrics.average_precision_score(y_test, y_pred_p.T[1], average="micro")
+    if (averagePrecision > bestAP):
+        if ((len([x for x in model.coef_[0] if float(x) < 0])) == 0):
+            bestAP = averagePrecision
+            bestCoeffs = coeffs
+            bestIntercept = model.intercept_[0]
+
+print('Average precision score: {:.4f}'.format(bestAP))
 print('Coefficients')
-print(coeffsWithBestPrecision)
+print(bestCoeffs)
 print('Intercept')
-print(interceptWithBestPrecision)
+print(bestIntercept)
 
