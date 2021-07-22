@@ -30,7 +30,7 @@ for opt, arg in opts:
         print('')
         print('The ranklib file is first transformed to a csv file for processing using ranklibToCsv.php')
         print('')
-        print('logreg.py -x --trainingDataSize={number <= 1}')
+        print('logreg.py -x --trainingDataSize={int}')
         print('')
         print('The option -x skips the transformation to csv, and uses the csv from the last run')
         print('If trainingDataSize is set, the data will be trained on the first (total_rows)*trainingDataSize rows of the csv, and tested on the rows that follow')
@@ -63,18 +63,18 @@ y_train = trainingData.loc[:, trainingData.columns == 'rating']
 y_test = testData.loc[:, testData.columns == 'rating']
 # exclude obviously highly-collinear variables, and use "plain" because not all languages have stemmed fields
 dependent_variable_columns = [
-  'descriptions.plain',
-  #'descriptions',
-  #'title',
-  'title.plain',
+  #'descriptions.plain',
+  'descriptions',
+  'title',
+  #'title.plain',
   'category',
-  #'redirect.title',
-  'redirect.title.plain',
+  'redirect.title',
+  #'redirect.title.plain',
   'suggest',
-  #'auxiliary_text',
-  'auxiliary_text.plain',
-  #'text',
-  'text.plain',
+  'auxiliary_text',
+  #'auxiliary_text.plain',
+  'text',
+  #'text.plain',
   'statements'
 ]
 X = alldata.loc[:, dependent_variable_columns]
@@ -92,9 +92,9 @@ X_test = testData.loc[:, dependent_variable_columns]
 
 bestAP = 0
 bestPrecisionAtK = 0
+k = 25
 bestCoeffs = {}
 bestIntercept = 0
-k = 25
 for i in range(len(dependent_variable_columns), 1, -1):
     # find the most significant fields
     significantColumns  = []
@@ -109,9 +109,8 @@ for i in range(len(dependent_variable_columns), 1, -1):
     X_test = testData.loc[:, significantColumns]
 
     model = logreg.fit(X_train, y_train.values.ravel())
-    coeffs = dict(zip(list(X.columns), model.coef_[0]))
+    coeffs = dict(zip(list(X_train.columns), model.coef_[0]))
 
-    # optimise for average precision
     y_pred = logreg.predict(X_test)
     # each y_pred_p row has 2 values
     # - 1st value is the probability that the sample should be in class "0" (i.e. it's a bad image)

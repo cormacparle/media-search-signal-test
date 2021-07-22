@@ -17,16 +17,21 @@ class AnalyzeResults extends GenericJob {
     }
 
     public function run() {
+        $maxResultCount = $this->db->query(
+            'select max(resultcount) as count from resultset where searchId = ' .
+            intval( $this->searchId )
+        )->fetch_all( MYSQLI_ASSOC )[0]['count'];
         $resultsets = $this->db->query(
-            'select id, term from resultset where searchId = ' . intval( $this->searchId )
+            'select id, term, resultcount from resultset where searchId = ' .
+            intval( $this->searchId )
         )->fetch_all( MYSQLI_ASSOC );
         if ( count( $resultsets ) === 0 ) {
             die( "ERROR: no results found with for search id " . $this->searchId . "\n");
         }
 
-        $truePositives = $falsePositives = $falseNegatives = 0;
-        $truePositivesAt10 = $truePositivesAt25 = $truePositivesAt50 = $truePositivesAt100 = 0;
-        $falsePositivesAt10 = $falsePositivesAt25 = $falsePositivesAt50 = $falsePositivesAt100 = 0;
+        $truePositives = $falseNegatives = $falsePositives = $recalls =
+            array_fill(1, $maxResultCount, 0 );
+        $averagePrecision = 0;
         foreach ( $resultsets as $resultset ) {
             $knownGoodResults = (int) $this->db->query(
                 'select count(*) as count from ratedSearchResult where ' .
@@ -42,113 +47,98 @@ class AnalyzeResults extends GenericJob {
                 continue;
             }
 
-            $truePositive = $this->getTruePositive( $resultset['id'], 99999999 );
-            $falsePositive = $this->getFalsePositive( $resultset['id'], 99999999 );
-            $falseNegative = $this->getFalseNegative( $resultset['id'], $resultset['term'] );
-
-            $truePositiveAt10 = $this->getTruePositive( $resultset['id'], 10 );
-            $truePositiveAt25 = $this->getTruePositive( $resultset['id'], 25 );
-            $truePositiveAt50 = $this->getTruePositive( $resultset['id'], 50 );
-            $truePositiveAt100 = $this->getTruePositive( $resultset['id'], 100 );
-
-            $falsePositiveAt10 = $this->getFalsePositive( $resultset['id'], 10 );
-            $falsePositiveAt25 = $this->getFalsePositive( $resultset['id'], 25 );
-            $falsePositiveAt50 = $this->getFalsePositive( $resultset['id'], 50 );
-            $falsePositiveAt100 = $this->getFalsePositive( $resultset['id'], 100 );
-
-            $precision = $this->calculatePrecision( $truePositive, $falsePositive );
-            $recall = $this->calculateRecall( $truePositive, $falseNegative );
-            $f1Score = $this->calculateF1Score( $precision, $recall );
-
-            $precisionAt10 = $this->calculatePrecision( $truePositiveAt10, $falsePositiveAt10 );
-            $precisionAt25 = $this->calculatePrecision( $truePositiveAt25, $falsePositiveAt25 );
-            $precisionAt50 = $this->calculatePrecision( $truePositiveAt50, $falsePositiveAt50 );
-            $precisionAt100 = $this->calculatePrecision( $truePositiveAt100, $falsePositiveAt100 );
-
-            // because the amount of known results varies greatly among resultsets,
-            // we'll use the micro-average method to calculate the overall f1score
-            // (if one resultset contains only 1 known value, it shouldn't have the
-            // same weight as one for which we know 15 values, as the latter is much
-            // more likely to be an accurate representation of reality - all labeled
-            // documents get equal representation this way)
-            // so we'll keep track of all relevant positive/negatives
-            // @see http://rushdishams.blogspot.com/2011/08/micro-and-macro-average-of-precision.html
-            $truePositives += $truePositive;
-            $falsePositives += $falsePositive;
-            $falseNegatives += $falseNegative;
-            $truePositivesAt10 += $truePositiveAt10;
-            $truePositivesAt25 += $truePositiveAt25;
-            $truePositivesAt50 += $truePositiveAt50;
-            $truePositivesAt100 += $truePositiveAt100;
-            $falsePositivesAt10 += $falsePositiveAt10;
-            $falsePositivesAt25 += $falsePositiveAt25;
-            $falsePositivesAt50 += $falsePositiveAt50;
-            $falsePositivesAt100 += $falsePositiveAt100;
+            for ( $i = 1 ; $i <= $maxResultCount ; $i++ ) {
+                $truePositives[$i] += $this->getTruePositive( $resultset['id'], $i );
+                $falsePositives[$i] += $this->getFalsePositive( $resultset['id'], $i );
+                $falseNegatives[$i] += $this->getFalseNegative( $resultset['id'], $i,
+                    $resultset['term'] );
+            }
         }
 
-        $precision = $this->calculatePrecision( $truePositives, $falsePositives );
-        $recall = $this->calculateRecall( $truePositives, $falseNegatives );
-        $f1Score = $this->calculateF1Score( $precision, $recall );
+        // Average precision
+        // @see https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision
+        for ( $i = 1 ; $i <= $maxResultCount ; $i++ ) {
+            $recalls[$i] = $this->calculateRecall( $truePositives[$i], $falseNegatives[$i] );
+            $precision = $this->calculatePrecision( $truePositives[$i], $falsePositives[$i] );
+            $averagePrecision += ( $recalls[$i] - $recalls[$i-1]??0 ) * $precision;
+        }
 
-        $precisionAt10 = $this->calculatePrecision( $truePositivesAt10, $falsePositivesAt10 );
-        $precisionAt25 = $this->calculatePrecision( $truePositivesAt25, $falsePositivesAt25 );
-        $precisionAt50 = $this->calculatePrecision( $truePositivesAt50, $falsePositivesAt50 );
-        $precisionAt100 = $this->calculatePrecision( $truePositivesAt100, $falsePositivesAt100 );
+        $precision = $this->calculatePrecision( $truePositives[$maxResultCount],
+            $falsePositives[$maxResultCount] );
+        $f1Score = $this->calculateF1Score( $precision, $recalls[$maxResultCount] );
+
+        $precisionAt10 = $this->calculatePrecision( $truePositives[10], $falsePositives[10] );
+        $precisionAt25 = $this->calculatePrecision( $truePositives[25], $falsePositives[25] );
+        $precisionAt50 = $this->calculatePrecision( $truePositives[50], $falsePositives[50] );
+        $precisionAt100 = $this->calculatePrecision( $truePositives[100], $falsePositives[100] );
 
         return '' .
-	        'F1 Score      | ' . ( $f1Score ?? '/' ) . "\n".
-            'Precision@10  | ' . ( $precisionAt10 ?? '/' ) . "\n".
-            'Precision@25  | ' . ( $precisionAt25 ?? '/' ) . "\n".
-            'Precision@50  | ' . ( $precisionAt50 ?? '/' ) . "\n".
-            'Precision@100 | ' . ( $precisionAt100 ?? '/' ) . "\n".
-            'Recall        | ' . ( $recall ?? '/' ) . "\n";
+	        'F1 Score          | ' . $f1Score . "\n".
+            'Precision@10      | ' . $precisionAt10 . "\n".
+            'Precision@25      | ' . $precisionAt25 . "\n".
+            'Precision@50      | ' . $precisionAt50 . "\n".
+            'Precision@100     | ' . $precisionAt100 . "\n".
+            'Recall            | ' . $recalls[$maxResultCount] . "\n".
+            'Average precision | ' . $averagePrecision . "\n";
     }
 
     private function getTruePositive( int $resultsetId, int $offset ) : int {
-        return (int) $this->db->query(
-            'select count(*) as count from labeledResult where ' .
-            'resultsetId = ' . intval( $resultsetId ) . ' and ' .
-            'position < ' . intval($offset) . ' and ' . // only count hits before a given offset
-            // results with zero scores can happen if we're using the url to tweak boosts for
-            // specific search signals - these should probably be ignored
-            'score > 0 and ' .
-            'rating = 1'
-        )->fetch_object()->count;
+        $count = 0;
+        $ratings = $this->getRatings( $resultsetId );
+        // looping rather than using array_filter() because can't use $offset in the filter
+        // function
+        foreach ( $ratings as $rating ) {
+            if ( $rating['position'] + 1 > $offset ) {
+                break;
+            }
+            if ( $rating['rating'] > 0 ) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
     private function getFalsePositive( int $resultsetId, int $offset ) : int {
-        return (int) $this->db->query(
-            'select count(*) as count from labeledResult where ' .
-            'resultsetId = ' . intval( $resultsetId ) . ' and ' .
-            'position < ' . intval($offset) . ' and ' . // only count hits before a given offset
-            // results with zero scores can happen if we're using the url to tweak boosts for
-            // specific search signals - these should probably be ignored
-            'score > 0 and ' .
-            'rating = -1'
-        )->fetch_object()->count;
+        $count = 0;
+        $ratings = $this->getRatings( $resultsetId );
+        // looping rather than using array_filter() because can't use $offset in the filter
+        // function
+        foreach ( $ratings as $rating ) {
+            if ( $rating['position'] + 1 > $offset ) {
+                break;
+            }
+            if ( $rating['rating'] < 0 ) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
-    private function getFalseNegative( int $resultsetId, string $searchTerm ) : int {
-        $truePositive = $this->getTruePositive( $resultsetId, 99999999 );
-
-        // false negative is going to be an approximation based on looking at
-        // how many of the known good matches are not present in the resultset;
-        // (note: we have to make sure they're not missing because only a part
-        // of the results was requested; i.e. limit too low...)
-        $ratings = [];
-        $labeledImages = $this->db->query(
-            'select result, rating from ratedSearchResult where
-            searchTerm="' . $this->db->real_escape_string( trim( $searchTerm ) ) .'" and
-            rating is not null'
-        );
-        while ( $labeledImage = $labeledImages->fetch_assoc() ) {
-            $ratings[$labeledImage['result']] = $labeledImage['rating'];
+    private function getRatings( int $resultsetId ) {
+        static $ratings = [];
+        if ( !isset( $ratings[$resultsetId] ) ) {
+            $ratings[$resultsetId] = $this->db->query(
+                'select position,rating from labeledResult where ' .
+                'resultsetId = ' . intval( $resultsetId ) . ' and ' .
+                // results with zero scores can happen if we're using the url to tweak boosts for
+                // specific search signals - these should probably be ignored
+                'score > 0 '.
+                'order by position'
+            )->fetch_all(MYSQLI_ASSOC);
         }
-        $knownPositive = count( array_filter( $ratings, function ( $rating ) {
-            return (int) $rating === 1;
-        } ) );
+        return $ratings[$resultsetId];
+    }
 
-        return $knownPositive - $truePositive;
+    private function getFalseNegative( int $resultsetId, int $offset, string $searchTerm ) : int {
+        static $allPositive = [];
+        if ( !isset( $allPositive[$resultsetId] ) ) {
+            $allPositive[$resultsetId] = $this->db->query(
+                    'select count(distinct result) as count from ratedSearchResult where
+                    searchTerm="' . $this->db->real_escape_string( trim( $searchTerm ) ) .'" and
+                    rating > 0'
+                )->fetch_assoc()['count'];
+        }
+        return $allPositive[$resultsetId] - $this->getTruePositive( $resultsetId, $offset );
     }
 
     private function calculatePrecision( int $truePositive, int $falsePositive ) : ?float {
