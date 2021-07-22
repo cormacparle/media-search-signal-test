@@ -12,13 +12,14 @@ import statsmodels.api as smapi
 import subprocess
 import sys
 
+from pprint import pprint
+
 ranklibFile = 'out/MediaSearch_20210127.tsv'
 
-ranklibSplit = "1"
-dataSplit = "1"
+trainingDataSize = 0.8
 generateNewCsv = True
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"hx", [ "ranklibSplit=", "dataSplit=" ])
+    opts, args = getopt.getopt(sys.argv[1:],"hx", [ "trainingDataSize=" ])
 except getopt.GetoptError:
     print('ERROR: Incorrect options')
     sys.exit(2)
@@ -29,58 +30,56 @@ for opt, arg in opts:
         print('')
         print('The ranklib file is first transformed to a csv file for processing using ranklibToCsv.php')
         print('')
-        print('logreg.py -x --ranklibSplit={number >= 1} --dataSplit={number >= 1}')
+        print('logreg.py -x --trainingDataSize={int}')
         print('')
-        print('The option -x skips the transformation to csv, and just uses the csv from the last run')
-        print('If ranklibSplit is set, the csv file will contain 1/(total rows/<ranklibSplit>) random rows from the ranklib file')
-        print('If dataSplit is set, only the first 1/<dataSplit> rows of data will be used for training')
+        print('The option -x skips the transformation to csv, and uses the csv from the last run')
+        print('If trainingDataSize is set, the data will be trained on the first (total_rows)*trainingDataSize rows of the csv, and tested on the rows that follow')
         print('')
         sys.exit()
-    elif opt == "--ranklibSplit":
-        ranklibSplit = arg
-    elif opt == "--dataSplit":
-        dataSplit = arg
+    elif opt == "--trainingDataSize":
+        trainingDataSize = float(arg)
     if opt == '-x':
         generateNewCsv = False
 
-if ( generateNewCsv == False and ranklibSplit != "1" ):
-    print('ERROR: You cannot use -x and --ranklibSplit at the same time')
-    sys.exit(2)
-
 if ( generateNewCsv == True ):
     # transform the ranklib file to a csv file for processing
-    subprocess.check_output( ["php", "ranklibToCsv.php", "--ranklibFile=" + ranklibFile, "--split=" + ranklibSplit ] )
+    subprocess.check_output( ["php", "ranklibToCsv.php", "--ranklibFile=" + ranklibFile ] )
 
 # load the data from the csv file
 alldata = pd.read_csv( ranklibFile.replace( '.tsv', '.csv' ), header=0 )
-data = alldata[:len(alldata)//int(dataSplit)]
-
+trainingData = alldata[:round(len(alldata)*trainingDataSize)]
+testData = alldata[len(alldata) - 1000:]
+print('Training on the first ' + str(len(trainingData)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
+print('Testing on the last ' + str(len(testData)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
 logreg = LogisticRegression(fit_intercept=True, solver='liblinear')
 
 # NAMING CONVENTIONS
 #
-# X is an array containing the dependent variables - i.e. the elasticsearch scores for each search component
-# y is an array containing the independent variable - i.e. the rating for the image
+# X(_(train|test)) -> array containing the dependent variables - i.e. the elasticsearch scores for each search component
+# y(_(train|test)) is an array containing the independent variable - i.e. the rating for the image
 
-y = data.loc[:, data.columns == 'rating']
-all_y = alldata.loc[:, data.columns == 'rating']
+y = alldata.loc[:, alldata.columns == 'rating']
+y_train = trainingData.loc[:, trainingData.columns == 'rating']
+y_test = testData.loc[:, testData.columns == 'rating']
 # exclude obviously highly-collinear variables, and use "plain" because not all languages have stemmed fields
 dependent_variable_columns = [
-  'descriptions.plain',
-  #'descriptions',
-  #'title',
-  'title.plain',
+  #'descriptions.plain',
+  'descriptions',
+  'title',
+  #'title.plain',
   'category',
-  #'redirect.title',
-  'redirect.title.plain',
+  'redirect.title',
+  #'redirect.title.plain',
   'suggest',
-  #'auxiliary_text',
-  'auxiliary_text.plain',
-  #'text',
-  'text.plain',
+  'auxiliary_text',
+  #'auxiliary_text.plain',
+  'text',
+  #'text.plain',
   'statements'
 ]
-X = data.loc[:, dependent_variable_columns]
+X = alldata.loc[:, dependent_variable_columns]
+X_train = trainingData.loc[:, dependent_variable_columns]
+X_test = testData.loc[:, dependent_variable_columns]
 
 # We need to have all positive coefficients for elasticsearch
 #
@@ -89,12 +88,13 @@ X = data.loc[:, dependent_variable_columns]
 #
 # Use RFE to reduce the number of dependent variables until we get all positive coefficients
 #
-# Optimise for AVERAGE PRECISION over the entire dataset
+# Optimise for AVERAGE PRECISION on the test data
 
-bestPrecision = 0
-bestPrecision_all = 0
-coeffsWithBestPrecision = {}
-interceptWithBestPrecision = 0
+bestAP = 0
+bestPrecisionAtK = 0
+k = 25
+bestCoeffs = {}
+bestIntercept = 0
 for i in range(len(dependent_variable_columns), 1, -1):
     # find the most significant fields
     significantColumns  = []
@@ -105,32 +105,35 @@ for i in range(len(dependent_variable_columns), 1, -1):
         if value:
             significantColumns.append( key )
 
-    X = data.loc[:, significantColumns]
-    all_X = alldata.loc[:, significantColumns]
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, random_state=0)
+    X_train = trainingData.loc[:, significantColumns]
+    X_test = testData.loc[:, significantColumns]
 
     model = logreg.fit(X_train, y_train.values.ravel())
-    coeffs = dict(zip(list(X.columns), model.coef_[0]))
+    coeffs = dict(zip(list(X_train.columns), model.coef_[0]))
 
-    # optimise for average precision
     y_pred = logreg.predict(X_test)
+    # each y_pred_p row has 2 values
+    # - 1st value is the probability that the sample should be in class "0" (i.e. it's a bad image)
+    # - 2nd value is the probability that the sample should be in class "1" (i.e. it's a good image)
     y_pred_p = logreg.predict_proba(X_test)
-    precision = metrics.average_precision_score(y_test, y_pred_p.T[1], average="micro")
-    y_pred_all = logreg.predict(all_X)
-    y_pred_p_all = logreg.predict_proba(all_X)
-    precision_all = metrics.average_precision_score(all_y, y_pred_p_all.T[1], average="micro")
-    if precision_all > bestPrecision_all:
-        if (len([x for x in model.coef_[0] if float(x) < 0])) == 0:
-            bestPrecision_all = precision_all
-            bestPrecision = precision
-            coeffsWithBestPrecision = coeffs
-            interceptWithBestPrecision = model.intercept_[0]
 
-print('Best overall average precision score: {:.4f}'.format(bestPrecision_all))
-print('Average precision score on test data for model with best overall average precision score: {:.4f}'.format(bestPrecision))
+    # calculate precision@k
+    indices = np.argsort(-np.array(y_pred_p.T[1]))
+    y_test_sorted_by_score = [y_test.values.ravel()[i] for i in indices]
+    precisionatk = sum([1 if l==1 else 0 for l in y_test_sorted_by_score[:k]])/float(k)
+
+    averagePrecision = metrics.average_precision_score(y_test, y_pred_p.T[1], average="micro")
+    if (averagePrecision > bestAP):
+        if ((len([x for x in model.coef_[0] if float(x) < 0])) == 0):
+            bestPrecisionAtK = precisionatk
+            bestAP = averagePrecision
+            bestCoeffs = coeffs
+            bestIntercept = model.intercept_[0]
+
+print('Average precision score: {:.4f}'.format(bestAP))
+print('Precision@25: {:.4f}'.format(bestPrecisionAtK))
 print('Coefficients')
-print(coeffsWithBestPrecision)
+print(bestCoeffs)
 print('Intercept')
-print(interceptWithBestPrecision)
+print(bestIntercept)
 

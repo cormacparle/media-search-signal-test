@@ -188,7 +188,7 @@ for i in range(len(dependent_variable_columns), 1, -1):
 
     model = logreg.fit(X_train, y_train.values.ravel())
     print('Coefficients')
-    print(dict(zip(list(X.columns), model.coef_[0])))
+    print(dict(zip(list(X_train.columns), model.coef_[0])))
     print('Intercept')
     print(model.intercept_[0])
 

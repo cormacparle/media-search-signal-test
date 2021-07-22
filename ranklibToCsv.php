@@ -6,9 +6,11 @@
  * All "meh" ratings (with value 0) are dropped, and all -1 ratings are converted to 0 (to make
  * analysis in python easier)
  *
+ * The order of the rows is shuffled
+ *
  * Params:
  * - ranklibFile ... a file in ranklib format for conversion
- * - split ...
+ * - split ... only write (total_rows)*(1/split) rows selected at random to the csv
  */
 
 function removeColon( $field ) {
@@ -51,16 +53,11 @@ fputcsv(
 );
 
 $ranklibAsArray = file( $options['ranklibFile'] );
-if ( $options['split'] != 1 ) {
-    $randomArrayKeys = array_rand(
-        $ranklibAsArray,
-        count($ranklibAsArray) / ( $options['split'] ?? 1)
-    );
-    shuffle($randomArrayKeys);
-} else {
-    $randomArrayKeys = array_keys( $ranklibAsArray );
-}
-
+$randomArrayKeys = array_rand(
+    $ranklibAsArray,
+    count($ranklibAsArray) / ( $options['split'] ?? 1)
+);
+shuffle($randomArrayKeys);
 foreach ( $randomArrayKeys as $key ) {
     $line = str_getcsv( $ranklibAsArray[$key], "\t" );
     if ( $line[0] !== "0" ) {

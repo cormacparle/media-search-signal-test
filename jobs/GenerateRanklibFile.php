@@ -36,6 +36,11 @@ class GenerateRanklibFile extends GenericJob {
     /** @var QueryResponseParser  */
     private $queryResponseParser;
     private $searchTermsFilename;
+    private static $stemmedFields = [
+        'ar', 'bg', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'en-ca', 'en-gb', 'es', 'eu',
+        'fa', 'fi', 'fr', 'ga', 'gl', 'he', 'hi', 'hu', 'hy', 'id', 'it', 'ja', 'ko', 'lt', 'lv',
+        'nb', 'nl', 'nn', 'pl', 'pt', 'pt-br', 'ro', 'ru', 'sv', 'th', 'tr', 'uk', 'zh'
+    ];
 
     public function __construct( array $config ) {
         parent::__construct( $config );
@@ -82,10 +87,20 @@ class GenerateRanklibFile extends GenericJob {
             } else {
                 die( "Something up with query filename structure.\n" );
             }
+            $queryText = file_get_contents( $this->queryDir . $queryFile );
+            $queryArray = json_decode( $queryText, JSON_OBJECT_AS_ARRAY );
+
+            // skip unstemmed fields - the featureset assumes all description fields are stemmed
+            // so the query will break if the stemmed field is missing
+            $language = $queryArray['query']['bool']['filter'][2]['sltr']['params']['language'];
+            if ( !in_array( $language, self::$stemmedFields ) ) {
+                continue;
+            }
+
             curl_setopt(
                 $this->ch,
                 CURLOPT_POSTFIELDS,
-                file_get_contents( $this->queryDir . $queryFile )
+                $queryText
             );
             $result = curl_exec( $this->ch );
             if ( curl_errno( $this->ch ) ) {
@@ -108,8 +123,9 @@ class GenerateRanklibFile extends GenericJob {
                     'select result, searchTerm, language, rating from ratedSearchResult where rating is not null'
                 );
             while ( $rating = $ratings->fetch_object() ) {
-                $filename = $this->stripTitleNamespace( $rating->result );
-                $ratingsByFile[$rating->language][strtolower( $rating->searchTerm )][$filename] =
+                $filename = base64_encode( $this->stripTitleNamespace( $rating->result ) );
+                $searchTerm = base64_encode( strtolower( $rating->searchTerm ) );
+                $ratingsByFile[$rating->language][ $searchTerm ][$filename] =
                     $rating->rating;
             }
         }
@@ -135,13 +151,15 @@ class GenerateRanklibFile extends GenericJob {
         $ratingsByFile = $this->getRatingsByFile();
         $searchTerm = $this->getSearchTerms()[$queryId];
         foreach ( $scores as $file => $scoreArray ) {
+            $searchTermKey = base64_encode( strtolower( $searchTerm['term'] ) );
+            $filenameKey = base64_encode( $file );
             $rating =
-                $ratingsByFile[ $searchTerm['language'] ][ $searchTerm['term'] ][ $file ]
+                $ratingsByFile[ $searchTerm['language'] ][ $searchTermKey ][ $filenameKey ]
                 ?? null;
             if ( is_null( $rating ) ) {
                 var_dump(
                     $queryId,
-                    $ratingsByFile[ $searchTerm['language'] ][ $searchTerm['term'] ],
+                    $ratingsByFile[ $searchTerm['language'] ][ $searchTermKey ],
                     $file,
                     $scoreArray
                 );
