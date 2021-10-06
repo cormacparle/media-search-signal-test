@@ -31,9 +31,12 @@ class FindLabeledImagesInResults extends GenericJob {
             $this->log( 'Searching ' . $searchTerm['term'] . ' in ' . $searchTerm['language'] );
             $searchUrl = $this->config['search']['baseUrl'].$this->config['searchurl'];
             try {
+                $startTime = hrtime( true );
                 $results = $this->httpGETJson( $searchUrl, $searchTerm['term'], $searchTerm['language'] );
+                // hrtime() gives values in ns, divide by 1000000 to get ms
+                $apiResponseTime = ( hrtime( true ) - $startTime )/1e6;
                 $this->processResults( $searchTerm['term'], $searchTerm['language'],
-                    $results, $searchId );
+                    $results, $searchId, $apiResponseTime );
             } catch ( \Exception $e ) {
                 $this->log( "Failed to fetch {$searchTerm['language']} results for {$searchTerm['term']} at $searchUrl\n" );
             }
@@ -71,7 +74,7 @@ class FindLabeledImagesInResults extends GenericJob {
     }
 
     private function processResults( string $searchTerm, string $language, array $searchResults,
-                                     int $searchId ) {
+                                     int $searchId, int $apiResponseTime ) {
         $labeledData = $this->getLabeledData( $searchTerm, $language );
 
         $hits = $searchResults['__main__']['result']['hits']['hits'] ?? [];
@@ -82,6 +85,7 @@ class FindLabeledImagesInResults extends GenericJob {
                 'searchId=' . intval( $searchId ) . ', ' .
                 'term="' .  $this->db->real_escape_string( $searchTerm ) . '", ' .
                 'language="' .  $this->db->real_escape_string( $language ) . '", ' .
+                'searchExecutionTime_ms=' .  intval( $apiResponseTime ) . ', ' .
                 'resultCount=' . intval( count( $hits ) )
             );
             $resultsetId = $this->db->insert_id;

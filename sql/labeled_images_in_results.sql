@@ -15,6 +15,7 @@ create table resultset (
   term varchar(255) not null,
   language varchar(5) not null,
   resultCount int not null,
+  searchExecutionTime_ms int unsigned not null,
   primary key (id),
   foreign key (searchId) references search(id)
 ) engine=innodb;

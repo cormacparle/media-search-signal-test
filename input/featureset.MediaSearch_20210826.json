@@ -1,0 +1,201 @@
+{
+	"featureset": {
+		"features": [{
+			"name": "match_descriptions_plain",
+			"params": ["text_search_term", "language"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"descriptions.{{language}}.plain": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_title_plain",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"title.plain": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_category",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"category": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_redirect_title_plain",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"redirect.title.plain": "{{text_search_term}}"
+				}
+			}
+		},
+		{
+			"name": "match_suggest",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"suggest": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_aux_text_plain",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"auxiliary_text.plain": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_text_plain",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"text.plain": "{{text_search_term}}"
+				}
+			}
+		},
+		{
+			"name": "match_statements",
+			"params": [
+				"DigRepOf_1", "DigRepOf_2", "DigRepOf_3", "DigRepOf_4", "DigRepOf_5",
+				"DigRepOf_6", "DigRepOf_7", "DigRepOf_8", "DigRepOf_9", "DigRepOf_10",
+				"DigRepOf_11", "DigRepOf_12", "DigRepOf_13", "DigRepOf_14", "DigRepOf_15",
+				"DigRepOf_16", "DigRepOf_17", "DigRepOf_18", "DigRepOf_19", "DigRepOf_20",
+				"DigRepOf_21", "DigRepOf_22", "DigRepOf_23", "DigRepOf_24", "DigRepOf_25",
+				"DigRepOf_26", "DigRepOf_27", "DigRepOf_28", "DigRepOf_29", "DigRepOf_30",
+				"DigRepOf_31", "DigRepOf_32", "DigRepOf_33", "DigRepOf_34", "DigRepOf_35",
+				"DigRepOf_36", "DigRepOf_37", "DigRepOf_38", "DigRepOf_39", "DigRepOf_40",
+				"DigRepOf_41", "DigRepOf_42", "DigRepOf_43", "DigRepOf_44", "DigRepOf_45",
+				"DigRepOf_46", "DigRepOf_47", "DigRepOf_48", "DigRepOf_49", "DigRepOf_50",
+				"Depicts_1", "Depicts_2", "Depicts_3", "Depicts_4", "Depicts_5",
+				"Depicts_6", "Depicts_7", "Depicts_8", "Depicts_9", "Depicts_10",
+				"Depicts_11", "Depicts_12", "Depicts_13", "Depicts_14", "Depicts_15",
+				"Depicts_16", "Depicts_17", "Depicts_18", "Depicts_19", "Depicts_20",
+				"Depicts_21", "Depicts_22", "Depicts_23", "Depicts_24", "Depicts_25",
+				"Depicts_26", "Depicts_27", "Depicts_28", "Depicts_29", "Depicts_30",
+				"Depicts_31", "Depicts_32", "Depicts_33", "Depicts_34", "Depicts_35",
+				"Depicts_36", "Depicts_37", "Depicts_38", "Depicts_39", "Depicts_40",
+				"Depicts_41", "Depicts_42", "Depicts_43", "Depicts_44", "Depicts_45",
+				"Depicts_46", "Depicts_47", "Depicts_48", "Depicts_49", "Depicts_50"
+			],
+			"template_language": "mustache",
+			"template": {
+				"dis_max": {
+					"queries": [
+						{ "match": { "statement_keywords": "{{DigRepOf_1}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_2}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_3}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_4}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_5}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_6}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_7}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_8}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_9}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_10}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_11}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_12}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_13}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_14}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_15}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_16}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_17}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_18}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_19}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_20}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_21}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_22}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_23}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_24}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_25}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_26}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_27}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_28}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_29}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_30}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_31}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_32}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_33}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_34}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_35}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_36}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_37}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_38}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_39}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_40}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_41}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_42}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_43}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_44}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_45}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_46}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_47}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_48}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_49}}" } },
+						{ "match": { "statement_keywords": "{{DigRepOf_50}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_1}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_2}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_3}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_4}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_5}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_6}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_7}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_8}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_9}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_10}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_11}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_12}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_13}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_14}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_15}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_16}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_17}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_18}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_19}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_20}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_21}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_22}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_23}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_24}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_25}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_26}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_27}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_28}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_29}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_30}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_31}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_32}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_33}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_34}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_35}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_36}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_37}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_38}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_39}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_40}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_41}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_42}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_43}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_44}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_45}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_46}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_47}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_48}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_49}}" } },
+						{ "match": { "statement_keywords": "{{Depicts_50}}" } }
+					]
+				}
+			}
+		}]
+	}
+}

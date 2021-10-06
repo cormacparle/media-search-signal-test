@@ -29,6 +29,26 @@ class MediaSearch_20210127 implements QueryJsonCreator {
         );
     }
 }
+class MediaSearch_20210826 implements QueryJsonCreator {
+    public function createQueryString( array $searchTermsRow, array $titles ) :
+    string {
+        $params = [
+            'textSearchTerm' => addcslashes( trim( $searchTermsRow[1] ), '"' ),
+            'languageCode' => trim( $searchTermsRow[2] ),
+            'commaSeparatedTitles' => '"' . implode("\",\n\"", $titles ) . "\"\n",
+        ];
+        for ( $i = 1; $i < count( $searchTermsRow ) - 2 ; $i++ ) {
+            $params[ 'DigRepOf_' . $i ] = 'P6243=' . trim( $searchTermsRow[$i + 2] );
+            $params[ 'Depicts_' . $i ] = 'P180=' . trim( $searchTermsRow[$i + 2] );
+        }
+
+        $m = new \Mustache_Engine( ['entity_flags' => ENT_NOQUOTES] );
+        return $m->render(
+            file_get_contents( __DIR__ . '/../input/MediaSearch_20210826_template.json' ),
+            $params
+        );
+    }
+}
 
 class GenerateFeatureQueries extends GenericJob {
 

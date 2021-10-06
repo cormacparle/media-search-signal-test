@@ -1,0 +1,138 @@
+{
+	"query": {
+		"bool": {
+			"filter": [
+				{
+					"terms": {
+						"title.keyword": [
+							{{commaSeparatedTitles}}
+						]
+					}
+				},
+				{
+					"terms": {
+						"namespace": [ 6 ]
+					}
+				},
+				{
+					"sltr": {
+						"_name": "logged_features",
+						"featureset": "MediaSearch_20210826",
+						"params": {
+							"text_search_term": "{{textSearchTerm}}",
+							"language": "{{languageCode}}",
+							"DigRepOf_1": "{{DigRepOf_1}}",
+							"DigRepOf_2": "{{DigRepOf_2}}",
+							"DigRepOf_3": "{{DigRepOf_3}}",
+							"DigRepOf_4": "{{DigRepOf_4}}",
+							"DigRepOf_5": "{{DigRepOf_5}}",
+							"DigRepOf_6": "{{DigRepOf_6}}",
+							"DigRepOf_7": "{{DigRepOf_7}}",
+							"DigRepOf_8": "{{DigRepOf_8}}",
+							"DigRepOf_9": "{{DigRepOf_9}}",
+							"DigRepOf_10": "{{DigRepOf_10}}",
+							"DigRepOf_11": "{{DigRepOf_11}}",
+							"DigRepOf_12": "{{DigRepOf_12}}",
+							"DigRepOf_13": "{{DigRepOf_13}}",
+							"DigRepOf_14": "{{DigRepOf_14}}",
+							"DigRepOf_15": "{{DigRepOf_15}}",
+							"DigRepOf_16": "{{DigRepOf_16}}",
+							"DigRepOf_17": "{{DigRepOf_17}}",
+							"DigRepOf_18": "{{DigRepOf_18}}",
+							"DigRepOf_19": "{{DigRepOf_19}}",
+							"DigRepOf_20": "{{DigRepOf_20}}",
+							"DigRepOf_21": "{{DigRepOf_21}}",
+							"DigRepOf_22": "{{DigRepOf_22}}",
+							"DigRepOf_23": "{{DigRepOf_23}}",
+							"DigRepOf_24": "{{DigRepOf_24}}",
+							"DigRepOf_25": "{{DigRepOf_25}}",
+							"DigRepOf_26": "{{DigRepOf_26}}",
+							"DigRepOf_27": "{{DigRepOf_27}}",
+							"DigRepOf_28": "{{DigRepOf_28}}",
+							"DigRepOf_29": "{{DigRepOf_29}}",
+							"DigRepOf_30": "{{DigRepOf_30}}",
+							"DigRepOf_31": "{{DigRepOf_31}}",
+							"DigRepOf_32": "{{DigRepOf_32}}",
+							"DigRepOf_33": "{{DigRepOf_33}}",
+							"DigRepOf_34": "{{DigRepOf_34}}",
+							"DigRepOf_35": "{{DigRepOf_35}}",
+							"DigRepOf_36": "{{DigRepOf_36}}",
+							"DigRepOf_37": "{{DigRepOf_37}}",
+							"DigRepOf_38": "{{DigRepOf_38}}",
+							"DigRepOf_39": "{{DigRepOf_39}}",
+							"DigRepOf_40": "{{DigRepOf_40}}",
+							"DigRepOf_41": "{{DigRepOf_41}}",
+							"DigRepOf_42": "{{DigRepOf_42}}",
+							"DigRepOf_43": "{{DigRepOf_43}}",
+							"DigRepOf_44": "{{DigRepOf_44}}",
+							"DigRepOf_45": "{{DigRepOf_45}}",
+							"DigRepOf_46": "{{DigRepOf_46}}",
+							"DigRepOf_47": "{{DigRepOf_47}}",
+							"DigRepOf_48": "{{DigRepOf_48}}",
+							"DigRepOf_49": "{{DigRepOf_49}}",
+							"DigRepOf_50": "{{DigRepOf_50}}",
+							"Depicts_1": "{{Depicts_1}}",
+							"Depicts_2": "{{Depicts_2}}",
+							"Depicts_3": "{{Depicts_3}}",
+							"Depicts_4": "{{Depicts_4}}",
+							"Depicts_5": "{{Depicts_5}}",
+							"Depicts_6": "{{Depicts_6}}",
+							"Depicts_7": "{{Depicts_7}}",
+							"Depicts_8": "{{Depicts_8}}",
+							"Depicts_9": "{{Depicts_9}}",
+							"Depicts_10": "{{Depicts_10}}",
+							"Depicts_11": "{{Depicts_11}}",
+							"Depicts_12": "{{Depicts_12}}",
+							"Depicts_13": "{{Depicts_13}}",
+							"Depicts_14": "{{Depicts_14}}",
+							"Depicts_15": "{{Depicts_15}}",
+							"Depicts_16": "{{Depicts_16}}",
+							"Depicts_17": "{{Depicts_17}}",
+							"Depicts_18": "{{Depicts_18}}",
+							"Depicts_19": "{{Depicts_19}}",
+							"Depicts_20": "{{Depicts_20}}",
+							"Depicts_21": "{{Depicts_21}}",
+							"Depicts_22": "{{Depicts_22}}",
+							"Depicts_23": "{{Depicts_23}}",
+							"Depicts_24": "{{Depicts_24}}",
+							"Depicts_25": "{{Depicts_25}}",
+							"Depicts_26": "{{Depicts_26}}",
+							"Depicts_27": "{{Depicts_27}}",
+							"Depicts_28": "{{Depicts_28}}",
+							"Depicts_29": "{{Depicts_29}}",
+							"Depicts_30": "{{Depicts_30}}",
+							"Depicts_31": "{{Depicts_31}}",
+							"Depicts_32": "{{Depicts_32}}",
+							"Depicts_33": "{{Depicts_33}}",
+							"Depicts_34": "{{Depicts_34}}",
+							"Depicts_35": "{{Depicts_35}}",
+							"Depicts_36": "{{Depicts_36}}",
+							"Depicts_37": "{{Depicts_37}}",
+							"Depicts_38": "{{Depicts_38}}",
+							"Depicts_39": "{{Depicts_39}}",
+							"Depicts_40": "{{Depicts_40}}",
+							"Depicts_41": "{{Depicts_41}}",
+							"Depicts_42": "{{Depicts_42}}",
+							"Depicts_43": "{{Depicts_43}}",
+							"Depicts_44": "{{Depicts_44}}",
+							"Depicts_45": "{{Depicts_45}}",
+							"Depicts_46": "{{Depicts_46}}",
+							"Depicts_47": "{{Depicts_47}}",
+							"Depicts_48": "{{Depicts_48}}",
+							"Depicts_49": "{{Depicts_49}}",
+							"Depicts_50": "{{Depicts_50}}"
+						}
+					}
+				}
+			]
+		}
+	},
+	"ext": {
+		"ltr_log": {
+			"log_specs": {
+				"name": "MediaSearch_20210826",
+				"named_query": "logged_features"
+			}
+		}
+	}
+}

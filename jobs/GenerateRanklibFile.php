@@ -41,6 +41,7 @@ class GenerateRanklibFile extends GenericJob {
         'fa', 'fi', 'fr', 'ga', 'gl', 'he', 'hi', 'hu', 'hy', 'id', 'it', 'ja', 'ko', 'lt', 'lv',
         'nb', 'nl', 'nn', 'pl', 'pt', 'pt-br', 'ro', 'ru', 'sv', 'th', 'tr', 'uk', 'zh'
     ];
+    private $skipUnstemmed = false;
 
     public function __construct( array $config ) {
         parent::__construct( $config );
@@ -65,6 +66,9 @@ class GenerateRanklibFile extends GenericJob {
         $this->featuresetName = $this->config['featuresetName'];
         $this->searchTermsFilename =
             __DIR__ . '/../' . $this->config['searchTermsWithEntitiesFile'];
+        if ( isset( $this->config['s'] ) ) {
+            $this->skipUnstemmed = true;
+        }
     }
 
     public function __destruct() {
@@ -90,11 +94,13 @@ class GenerateRanklibFile extends GenericJob {
             $queryText = file_get_contents( $this->queryDir . $queryFile );
             $queryArray = json_decode( $queryText, JSON_OBJECT_AS_ARRAY );
 
-            // skip unstemmed fields - the featureset assumes all description fields are stemmed
-            // so the query will break if the stemmed field is missing
-            $language = $queryArray['query']['bool']['filter'][2]['sltr']['params']['language'];
-            if ( !in_array( $language, self::$stemmedFields ) ) {
-                continue;
+            if ( $this->skipUnstemmed ) {
+                // skip unstemmed fields - the featureset assumes all description fields are stemmed
+                // so the query will break if the stemmed field is missing
+                $language = $queryArray['query']['bool']['filter'][2]['sltr']['params']['language'];
+                if ( !in_array( $language, self::$stemmedFields ) ) {
+                    continue;
+                }
             }
 
             curl_setopt(
@@ -182,6 +188,6 @@ class GenerateRanklibFile extends GenericJob {
     }
 }
 
-$options = getopt( '', [ 'queryDir:', 'featuresetName:', 'searchTermsWithEntitiesFile:' ] );
+$options = getopt( 's', [ 'queryDir:', 'featuresetName:', 'searchTermsWithEntitiesFile:' ] );
 $job = new GenerateRanklibFile( $options );
 $job->run();
