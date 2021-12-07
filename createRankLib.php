@@ -10,7 +10,7 @@
  */
 
 $featureSetName = 'MediaSearch_20211206';
-$searchTermsWithEntitiesFile = "out/searchTermsWithEntities.csv";
+$searchTermsWithEntitiesFile = "out/searchTermsWithEntitiesAndTitleMatch.csv";
 
 shell_exec(
     'php jobs/GenerateSearchTermsWithEntitiesFile.php ' .

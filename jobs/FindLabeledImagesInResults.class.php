@@ -15,11 +15,8 @@ class FindLabeledImagesInResults extends GenericJob {
     public function __construct( array $config = [] ) {
         if ( !isset( $config['searchurl'] ) ) {
             $config['searchurl'] =
-                /*'/w/api.php?action=query&list=search&uselang=%s&srsearch=connectedtowikidataid:%s' .
-                '&srnamespace=6&srqiprofile=empty&srlimit=max&cirrusDumpResult';*/
                 '/w/api.php?action=query&list=search&uselang=%s&srsearch=%s+filetype:bitmap' .
-                '&srnamespace=6&srqiprofile=empty&srlimit=max&cirrusDumpResult' .
-                '&mediasearch_weighted_tags';
+                '&srnamespace=6&srqiprofile=empty&srlimit=max&cirrusDumpResult';
         }
         if ( !isset( $config['description'] ) ) {
             $config['description'] = 'Search of ' . $config['searchurl'] . ' on ' .
