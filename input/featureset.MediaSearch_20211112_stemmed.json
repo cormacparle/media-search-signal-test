@@ -1,0 +1,407 @@
+{
+	"featureset": {
+		"features": [{
+			"name": "match_descriptions",
+			"params": ["text_search_term", "language"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"descriptions.{{language}}": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_title",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"title": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_category",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"category": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_redirect_title",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"redirect.title": "{{text_search_term}}"
+				}
+			}
+		},
+		{
+			"name": "match_suggest",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"suggest": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_aux_text",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"auxiliary_text": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_text",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"text": "{{text_search_term}}"
+				}
+			}
+		},
+		{
+			"name": "match_statements",
+			"params": [
+				"Item_1", "Item_2", "Item_3", "Item_4", "Item_5",
+				"Item_6", "Item_7", "Item_8", "Item_9", "Item_10",
+				"Item_11", "Item_12", "Item_13", "Item_14", "Item_15",
+				"Item_16", "Item_17", "Item_18", "Item_19", "Item_20",
+				"Item_21", "Item_22", "Item_23", "Item_24", "Item_25",
+				"Item_26", "Item_27", "Item_28", "Item_29", "Item_30",
+				"Item_31", "Item_32", "Item_33", "Item_34", "Item_35",
+				"Item_36", "Item_37", "Item_38", "Item_39", "Item_40",
+				"Item_41", "Item_42", "Item_43", "Item_44", "Item_45",
+				"Item_46", "Item_47", "Item_48", "Item_49", "Item_50"
+			],
+			"template_language": "mustache",
+			"template": {
+				"dis_max": {
+					"queries": [
+						{ "match": { "statement_keywords": "P6243={{Item_1}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_2}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_3}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_4}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_5}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_6}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_7}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_8}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_9}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_10}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_11}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_12}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_13}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_14}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_15}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_16}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_17}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_18}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_19}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_20}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_21}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_22}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_23}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_24}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_25}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_26}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_27}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_28}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_29}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_30}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_31}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_32}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_33}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_34}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_35}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_36}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_37}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_38}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_39}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_40}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_41}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_42}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_43}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_44}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_45}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_46}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_47}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_48}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_49}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_50}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_1}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_2}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_3}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_4}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_5}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_6}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_7}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_8}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_9}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_10}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_11}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_12}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_13}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_14}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_15}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_16}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_17}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_18}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_19}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_20}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_21}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_22}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_23}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_24}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_25}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_26}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_27}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_28}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_29}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_30}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_31}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_32}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_33}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_34}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_35}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_36}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_37}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_38}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_39}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_40}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_41}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_42}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_43}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_44}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_45}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_46}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_47}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_48}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_49}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_50}}" } }
+					]
+				}
+			}
+		},
+		{
+			"name": "match_p18",
+			"params": [
+				"Item_1", "Item_2", "Item_3", "Item_4", "Item_5",
+				"Item_6", "Item_7", "Item_8", "Item_9", "Item_10",
+				"Item_11", "Item_12", "Item_13", "Item_14", "Item_15",
+				"Item_16", "Item_17", "Item_18", "Item_19", "Item_20",
+				"Item_21", "Item_22", "Item_23", "Item_24", "Item_25",
+				"Item_26", "Item_27", "Item_28", "Item_29", "Item_30",
+				"Item_31", "Item_32", "Item_33", "Item_34", "Item_35",
+				"Item_36", "Item_37", "Item_38", "Item_39", "Item_40",
+				"Item_41", "Item_42", "Item_43", "Item_44", "Item_45",
+				"Item_46", "Item_47", "Item_48", "Item_49", "Item_50"
+			],
+			"template_language": "mustache",
+			"template": {
+				"dis_max": {
+					"queries": [
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_1}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_2}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_3}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_4}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_5}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_6}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_7}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_8}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_9}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_10}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_11}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_12}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_13}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_14}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_15}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_16}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_17}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_18}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_19}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_20}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_21}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_22}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_23}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_24}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_25}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_26}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_27}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_28}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_29}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_30}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_31}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_32}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_33}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_34}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_35}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_36}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_37}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_38}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_39}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_40}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_41}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_42}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_43}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_44}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_45}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_46}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_47}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_48}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_49}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p18/{{Item_50}}" } }
+					]
+				}
+			}
+		},
+		{
+			"name": "match_p373",
+			"params": [
+				"Item_1", "Item_2", "Item_3", "Item_4", "Item_5",
+				"Item_6", "Item_7", "Item_8", "Item_9", "Item_10",
+				"Item_11", "Item_12", "Item_13", "Item_14", "Item_15",
+				"Item_16", "Item_17", "Item_18", "Item_19", "Item_20",
+				"Item_21", "Item_22", "Item_23", "Item_24", "Item_25",
+				"Item_26", "Item_27", "Item_28", "Item_29", "Item_30",
+				"Item_31", "Item_32", "Item_33", "Item_34", "Item_35",
+				"Item_36", "Item_37", "Item_38", "Item_39", "Item_40",
+				"Item_41", "Item_42", "Item_43", "Item_44", "Item_45",
+				"Item_46", "Item_47", "Item_48", "Item_49", "Item_50"
+			],
+			"template_language": "mustache",
+			"template": {
+				"dis_max": {
+					"queries": [
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_1}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_2}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_3}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_4}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_5}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_6}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_7}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_8}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_9}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_10}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_11}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_12}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_13}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_14}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_15}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_16}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_17}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_18}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_19}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_20}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_21}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_22}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_23}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_24}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_25}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_26}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_27}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_28}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_29}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_30}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_31}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_32}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_33}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_34}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_35}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_36}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_37}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_38}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_39}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_40}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_41}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_42}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_43}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_44}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_45}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_46}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_47}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_48}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_49}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.p373/{{Item_50}}" } }
+					]
+				}
+			}
+		},
+		{
+			"name": "match_sitelinks",
+			"params": [
+				"Item_1", "Item_2", "Item_3", "Item_4", "Item_5",
+				"Item_6", "Item_7", "Item_8", "Item_9", "Item_10",
+				"Item_11", "Item_12", "Item_13", "Item_14", "Item_15",
+				"Item_16", "Item_17", "Item_18", "Item_19", "Item_20",
+				"Item_21", "Item_22", "Item_23", "Item_24", "Item_25",
+				"Item_26", "Item_27", "Item_28", "Item_29", "Item_30",
+				"Item_31", "Item_32", "Item_33", "Item_34", "Item_35",
+				"Item_36", "Item_37", "Item_38", "Item_39", "Item_40",
+				"Item_41", "Item_42", "Item_43", "Item_44", "Item_45",
+				"Item_46", "Item_47", "Item_48", "Item_49", "Item_50"
+			],
+			"template_language": "mustache",
+			"template": {
+				"dis_max": {
+					"queries": [
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_1}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_2}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_3}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_4}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_5}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_6}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_7}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_8}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_9}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_10}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_11}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_12}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_13}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_14}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_15}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_16}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_17}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_18}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_19}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_20}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_21}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_22}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_23}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_24}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_25}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_26}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_27}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_28}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_29}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_30}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_31}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_32}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_33}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_34}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_35}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_36}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_37}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_38}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_39}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_40}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_41}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_42}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_43}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_44}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_45}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_46}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_47}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_48}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_49}}" } },
+						{ "match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{Item_50}}" } }
+					]
+				}
+			}
+		} ]
+	}
+}

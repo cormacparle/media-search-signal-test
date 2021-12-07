@@ -6,6 +6,21 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once 'GenericJob.php';
 
 class QueryResponseParser {
+    /**
+     * Returns an array with page titles as keys, and as values an array with a value (-1, 0, 1)
+     * for each score returned from the featureset
+     *
+     * e.g.
+     * [
+     *  'image_1.jpg' => [1, -1, 0],
+     *  'image_2.jpg' => [0, -1, 0],
+     * ]
+     *
+     * @param array $queryResponse
+     * @param string $featuresetName
+     * @param int $queryId
+     * @return array
+     */
     public function parseQueryResponse( array $queryResponse, string $featuresetName, int $queryId
     ) :
     array {
@@ -33,6 +48,7 @@ class GenerateRanklibFile extends GenericJob {
     private $out;
     private $queryDir;
     private $featuresetName;
+    private $stemmedFeaturesetName;
     /** @var QueryResponseParser  */
     private $queryResponseParser;
     private $searchTermsFilename;
@@ -47,13 +63,15 @@ class GenerateRanklibFile extends GenericJob {
         parent::__construct( $config );
         $this->setLogFileHandle( __DIR__ . '/../' . $this->config['log']['generateRanklibFile'] );
 
+        $searchIndex = $this->config['searchIndex'] ?: 'commonswiki_file';
+
         $this->ch = curl_init();
         curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
         curl_setopt( $this->ch, CURLOPT_POST, true );
         curl_setopt( $this->ch, CURLOPT_HTTPHEADER, [ 'Content-Type: application/json' ] );
         curl_setopt( $this->ch, CURLOPT_SSL_VERIFYPEER, false );
         curl_setopt( $this->ch, CURLOPT_SSL_VERIFYHOST, false );
-        curl_setopt( $this->ch, CURLOPT_URL, 'https://127.0.0.1:9243/commonswiki_file/_search' );
+        curl_setopt( $this->ch, CURLOPT_URL, 'https://127.0.0.1:9243/' . $searchIndex . '/_search' );
 
         $this->out = fopen(
             __DIR__ . '/../' . $this->config['ltr']['ranklibOutputDir'] .
@@ -64,6 +82,7 @@ class GenerateRanklibFile extends GenericJob {
         $this->queryDir = __DIR__ . '/../' . $this->config['queryDir'] . '/';
         $this->queryResponseParser = new QueryResponseParser();
         $this->featuresetName = $this->config['featuresetName'];
+        $this->stemmedFeaturesetName = $this->config['stemmedFeaturesetName'] ?? $this->config['featuresetName'];
         $this->searchTermsFilename =
             __DIR__ . '/../' . $this->config['searchTermsWithEntitiesFile'];
         if ( isset( $this->config['s'] ) ) {
@@ -80,7 +99,7 @@ class GenerateRanklibFile extends GenericJob {
 
     public function run() {
         $this->log( 'Begin' . "\n" );
-        $queryFiles = array_diff( scandir( $this->queryDir) , [ '..', '.' ] );
+        $queryFiles = array_diff( scandir( $this->queryDir ) , [ '..', '.' ] );
         foreach ( $queryFiles as $index => $queryFile ) {
             if ( $queryFile === '.gitignore' ) {
                 continue;
@@ -94,10 +113,10 @@ class GenerateRanklibFile extends GenericJob {
             $queryText = file_get_contents( $this->queryDir . $queryFile );
             $queryArray = json_decode( $queryText, JSON_OBJECT_AS_ARRAY );
 
+            $language = $queryArray['query']['bool']['filter'][2]['sltr']['params']['language'];
             if ( $this->skipUnstemmed ) {
                 // skip unstemmed fields - the featureset assumes all description fields are stemmed
                 // so the query will break if the stemmed field is missing
-                $language = $queryArray['query']['bool']['filter'][2]['sltr']['params']['language'];
                 if ( !in_array( $language, self::$stemmedFields ) ) {
                     continue;
                 }
@@ -113,29 +132,39 @@ class GenerateRanklibFile extends GenericJob {
                 $this->log( curl_error( $this->ch ) . ':' . curl_errno( $this->ch ) );
                 die( "Exiting because of curl error, see log for details.\n" );
             }
-            $scores = $this->queryResponseParser->parseQueryResponse( json_decode( $result,
-                true ), $this->featuresetName, $queryId );
+            $scores = $this->queryResponseParser->parseQueryResponse(
+                json_decode( $result,true ),
+                in_array( $language, self::$stemmedFields ) ? $this->stemmedFeaturesetName :
+                    $this->featuresetName, 
+                $queryId,
+                $language
+            );
             $this->writeRanklibData( $queryId, $scores );
         }
         $this->log( 'End' . "\n" );
     }
 
-    private function getRatingsByFile() : array {
-        static $ratingsByFile;
-        if ( is_null( $ratingsByFile ) ) {
-            $ratingsByFile = [];
+    private function getRatingsByLangTermFile() : array {
+        static $ratingsByLangTermFile;
+        if ( is_null( $ratingsByLangTermFile ) ) {
+            $ratingsByLangTermFile = [];
             $ratings =
                 $this->db->query(
-                    'select result, searchTerm, language, rating from ratedSearchResult where rating is not null'
+                    'select result, searchTerm, language, rating, searchTermExactMatchWikidataId ' .
+                    'from ratedSearchResult where rating is not null'
                 );
             while ( $rating = $ratings->fetch_object() ) {
                 $filename = base64_encode( $this->stripTitleNamespace( $rating->result ) );
                 $searchTerm = base64_encode( strtolower( $rating->searchTerm ) );
-                $ratingsByFile[$rating->language][ $searchTerm ][$filename] =
+                $wikidataId = base64_encode( strtolower( $rating->searchTermExactMatchWikidataId
+                ) );
+                $ratingsByLangTermFile[$rating->language][ $searchTerm ][$filename] =
+                    $rating->rating;
+                $ratingsByLangTermFile[$rating->language][ $wikidataId ][$filename] =
                     $rating->rating;
             }
         }
-        return $ratingsByFile;
+        return $ratingsByLangTermFile;
     }
 
     private function getSearchTerms() : array {
@@ -154,22 +183,26 @@ class GenerateRanklibFile extends GenericJob {
     }
 
     private function writeRanklibData( int $queryId, array $scores ) {
-        $ratingsByFile = $this->getRatingsByFile();
+        $ratingsByLangTermFile = $this->getRatingsByLangTermFile();
         $searchTerm = $this->getSearchTerms()[$queryId];
+        $language = trim( $searchTerm['language'] );
         foreach ( $scores as $file => $scoreArray ) {
             $searchTermKey = base64_encode( strtolower( $searchTerm['term'] ) );
             $filenameKey = base64_encode( $file );
             $rating =
-                $ratingsByFile[ $searchTerm['language'] ][ $searchTermKey ][ $filenameKey ]
+                $ratingsByLangTermFile[ $language ][ $searchTermKey ][ $filenameKey ]
                 ?? null;
             if ( is_null( $rating ) ) {
                 var_dump(
                     $queryId,
-                    $ratingsByFile[ $searchTerm['language'] ][ $searchTermKey ],
+                    $searchTerm['term'],
+                    $searchTermKey,
+                    $filenameKey,
+                    $ratingsByLangTermFile[ $language ][ $searchTermKey ],
                     $file,
                     $scoreArray
                 );
-                die( "Rating for " . $file . " for " . $searchTerm['language'] . " not found.\n" );
+                die( "Rating for " . $file . " for " . $language . " not found.\n" );
             }
             $ranklibLine =
                 $rating . "\t" .
@@ -177,8 +210,8 @@ class GenerateRanklibFile extends GenericJob {
             foreach ( $scoreArray as $index => $score ) {
                 $ranklibLine .= $index . ":" . $score . "\t";
             }
-            $ranklibLine .= "# " . $file . "\t" . $searchTerm['language'] . '|' .
-                $searchTerm['term'] . "\n";
+            $ranklibLine .= "# " . $file . "\t" . trim( $searchTerm['language'] ) . '|' .
+                trim( $searchTerm['term'] ) . "\n";
             fwrite( $this->out, $ranklibLine );
         }
     }
@@ -188,6 +221,7 @@ class GenerateRanklibFile extends GenericJob {
     }
 }
 
-$options = getopt( 's', [ 'queryDir:', 'featuresetName:', 'searchTermsWithEntitiesFile:' ] );
+$options = getopt( 's', [ 'queryDir:', 'stemmedFeaturesetName::',
+    'featuresetName:', 'searchTermsWithEntitiesFile:', 'searchIndex::' ] );
 $job = new GenerateRanklibFile( $options );
 $job->run();

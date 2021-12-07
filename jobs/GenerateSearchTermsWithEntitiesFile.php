@@ -7,11 +7,17 @@ require_once 'GenericJob.php';
 /**
  * Finds wikidata items corresponding to the search terms in ratedSearchResult, and outputs then
  * with the search term and language to the specified output file
+ *
+ * Options:
+ * --tag Only use search terms from rated search results tagged with the tag
+ * -w Only output `searchTermExactMatchWikidataId`, and skip finding other wikidata items
+ * -t Append searchTermExactMatchWikidataId to each row
  */
 class GenerateSearchTermsWithEntitiesFile extends GenericJob {
 
     private $entitySearchBaseUrl;
     private $out;
+    private $wikidataIdsAsSearchTerms = false;
 
     public function __construct( array $config = [] ) {
         parent::__construct( $config );
@@ -21,22 +27,29 @@ class GenerateSearchTermsWithEntitiesFile extends GenericJob {
             __DIR__ . '/../' . $this->config['outputFile'],
             'w'
         );
+        if ( isset( $this->config['w'] ) ) {
+            $this->wikidataIdsAsSearchTerms = true;
+        }
     }
 
     private function getSearchTerms() : array {
         $searchTerms = [];
-        $query = 'select distinct searchTerm,language from ratedSearchResult where rating is not null';
+        $query = 'select distinct searchTerm,language,searchTermExactMatchWikidataId from ratedSearchResult ';
         if ( isset( $this->config['tag'] ) ) {
-            $query .= ' join ratedSearchResult_tag ' .
+            $query .= 'join ratedSearchResult_tag ' .
                 'on ratedSearchResult_tag.ratedSearchResultId=ratedSearchResult.id ' .
                 'join tag on ratedSearchResult_tag.tagId=tag.id ' .
-                ' where tag.text="' . $this->dbEscape( $this->config['tag'] ). '"';
+                'where tag.text="' . $this->dbEscape( $this->config['tag'] ). '" ' .
+                'and rating is not null ';
+        } else {
+            $query .= 'where rating is not null ';
         }
         $searchTermResults = $this->db->query( $query );
         while ( $row = $searchTermResults->fetch_assoc() ) {
             $searchTerms[] = [
                 'term' => trim( $row['searchTerm'] ),
-                'language' => $row['language']
+                'language' => $row['language'],
+                'wikidataId' => $row['searchTermExactMatchWikidataId'],
             ];
         }
         return $searchTerms;
@@ -46,21 +59,27 @@ class GenerateSearchTermsWithEntitiesFile extends GenericJob {
         $this->log( 'Begin' . "\n" );
         $count = 1;
         foreach ( $this->getSearchTerms() as $searchTerm ) {
-            $this->log( 'Searching ' . $searchTerm['term'] . ' in ' . $searchTerm['language'] );
-            $entities = array_pad(
-                $this->getEntities( $searchTerm['term'], $searchTerm['language'] ),
-                50,
-                'NO_ENTITY'
-            );
+            if ( $this->wikidataIdsAsSearchTerms ) {
+                if ( !$searchTerm['wikidataId'] ) {
+                    continue;
+                }
+                $output = [ $count, $searchTerm['wikidataId'], $searchTerm['language'] ];
+            } else {
+                $output = [ $count, $searchTerm['term'], $searchTerm['language'] ];
+                $this->log( 'Searching ' . $searchTerm['term'] . ' in ' . $searchTerm['language'] );
+                $entities = array_pad(
+                    $this->getEntities( $searchTerm['term'], $searchTerm['language'] ),
+                    50,
+                    'NO_ENTITY'
+                );
+                $output = array_merge( $output, $entities );
+                if ( isset( $this->config['t'] ) ) {
+                    $output = array_merge( $output, [ $searchTerm['wikidataId'] ?: 'NO_MATCH' ] );
+                }
+            }
             fwrite(
                 $this->out,
-                implode(
-                    ",",
-                    array_merge(
-                        [ $count, $searchTerm['term'], $searchTerm['language'] ],
-                        $entities
-                    )
-                ) . "\n"
+                implode( ",", $output ) . "\n"
             );
             $count++;
         }
@@ -137,7 +156,7 @@ class GenerateSearchTermsWithEntitiesFile extends GenericJob {
     }
 }
 
-$options = getopt( '', [ 'outputFile:' ] );
+$options = getopt( 'wt', [ 'outputFile:', 'tag::' ] );
 if ( !isset( $options['outputFile'] ) ) {
     die( "ERROR: you must specify a file to output to using --outputFile\n" );
 }

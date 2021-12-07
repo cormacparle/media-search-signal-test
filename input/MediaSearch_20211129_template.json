@@ -1,0 +1,89 @@
+{
+	"query": {
+		"bool": {
+			"filter": [
+				{
+					"terms": {
+						"title.keyword": [
+							{{commaSeparatedTitles}}
+						]
+					}
+				},
+				{
+					"terms": {
+						"namespace": [ 6 ]
+					}
+				},
+				{
+					"sltr": {
+						"_name": "logged_features",
+						"featureset": "MediaSearch_20211129_plain",
+						"params": {
+							"text_search_term": "{{textSearchTerm}}",
+							"language": "{{languageCode}}",
+							"Item_1": "{{Item_1}}",
+							"Item_2": "{{Item_2}}",
+							"Item_3": "{{Item_3}}",
+							"Item_4": "{{Item_4}}",
+							"Item_5": "{{Item_5}}",
+							"Item_6": "{{Item_6}}",
+							"Item_7": "{{Item_7}}",
+							"Item_8": "{{Item_8}}",
+							"Item_9": "{{Item_9}}",
+							"Item_10": "{{Item_10}}",
+							"Item_11": "{{Item_11}}",
+							"Item_12": "{{Item_12}}",
+							"Item_13": "{{Item_13}}",
+							"Item_14": "{{Item_14}}",
+							"Item_15": "{{Item_15}}",
+							"Item_16": "{{Item_16}}",
+							"Item_17": "{{Item_17}}",
+							"Item_18": "{{Item_18}}",
+							"Item_19": "{{Item_19}}",
+							"Item_20": "{{Item_20}}",
+							"Item_21": "{{Item_21}}",
+							"Item_22": "{{Item_22}}",
+							"Item_23": "{{Item_23}}",
+							"Item_24": "{{Item_24}}",
+							"Item_25": "{{Item_25}}",
+							"Item_26": "{{Item_26}}",
+							"Item_27": "{{Item_27}}",
+							"Item_28": "{{Item_28}}",
+							"Item_29": "{{Item_29}}",
+							"Item_30": "{{Item_30}}",
+							"Item_31": "{{Item_31}}",
+							"Item_32": "{{Item_32}}",
+							"Item_33": "{{Item_33}}",
+							"Item_34": "{{Item_34}}",
+							"Item_35": "{{Item_35}}",
+							"Item_36": "{{Item_36}}",
+							"Item_37": "{{Item_37}}",
+							"Item_38": "{{Item_38}}",
+							"Item_39": "{{Item_39}}",
+							"Item_40": "{{Item_40}}",
+							"Item_41": "{{Item_41}}",
+							"Item_42": "{{Item_42}}",
+							"Item_43": "{{Item_43}}",
+							"Item_44": "{{Item_44}}",
+							"Item_45": "{{Item_45}}",
+							"Item_46": "{{Item_46}}",
+							"Item_47": "{{Item_47}}",
+							"Item_48": "{{Item_48}}",
+							"Item_49": "{{Item_49}}",
+							"Item_50": "{{Item_50}}",
+							"title_match_item_id": "{{title_match_item_id}}"
+						}
+					}
+				}
+			]
+		}
+	},
+	"ext": {
+		"ltr_log": {
+			"log_specs": {
+				"name": "MediaSearch_20211129_plain",
+				"named_query": "logged_features"
+			}
+		}
+	}
+}

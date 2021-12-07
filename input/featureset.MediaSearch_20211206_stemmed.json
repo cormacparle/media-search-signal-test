@@ -1,0 +1,222 @@
+{
+	"featureset": {
+		"features": [{
+			"name": "match_descriptions",
+			"params": ["text_search_term", "language"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"descriptions.{{language}}": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_title",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"title": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_category",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"category": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_redirect_title",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"redirect.title": "{{text_search_term}}"
+				}
+			}
+		},
+		{
+			"name": "match_suggest",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"suggest": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_aux_text",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"auxiliary_text": "{{text_search_term}}"
+				}
+			}
+		}, {
+			"name": "match_text",
+			"params": ["text_search_term"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"text": "{{text_search_term}}"
+				}
+			}
+		},
+		{
+			"name": "match_statements",
+			"params": [
+				"Item_1", "Item_2", "Item_3", "Item_4", "Item_5",
+				"Item_6", "Item_7", "Item_8", "Item_9", "Item_10",
+				"Item_11", "Item_12", "Item_13", "Item_14", "Item_15",
+				"Item_16", "Item_17", "Item_18", "Item_19", "Item_20",
+				"Item_21", "Item_22", "Item_23", "Item_24", "Item_25",
+				"Item_26", "Item_27", "Item_28", "Item_29", "Item_30",
+				"Item_31", "Item_32", "Item_33", "Item_34", "Item_35",
+				"Item_36", "Item_37", "Item_38", "Item_39", "Item_40",
+				"Item_41", "Item_42", "Item_43", "Item_44", "Item_45",
+				"Item_46", "Item_47", "Item_48", "Item_49", "Item_50"
+			],
+			"template_language": "mustache",
+			"template": {
+				"dis_max": {
+					"queries": [
+						{ "match": { "statement_keywords": "P6243={{Item_1}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_2}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_3}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_4}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_5}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_6}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_7}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_8}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_9}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_10}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_11}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_12}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_13}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_14}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_15}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_16}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_17}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_18}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_19}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_20}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_21}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_22}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_23}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_24}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_25}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_26}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_27}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_28}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_29}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_30}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_31}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_32}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_33}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_34}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_35}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_36}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_37}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_38}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_39}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_40}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_41}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_42}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_43}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_44}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_45}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_46}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_47}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_48}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_49}}" } },
+						{ "match": { "statement_keywords": "P6243={{Item_50}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_1}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_2}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_3}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_4}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_5}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_6}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_7}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_8}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_9}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_10}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_11}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_12}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_13}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_14}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_15}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_16}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_17}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_18}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_19}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_20}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_21}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_22}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_23}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_24}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_25}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_26}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_27}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_28}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_29}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_30}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_31}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_32}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_33}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_34}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_35}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_36}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_37}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_38}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_39}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_40}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_41}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_42}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_43}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_44}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_45}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_46}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_47}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_48}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_49}}" } },
+						{ "match": { "statement_keywords": "P180={{Item_50}}" } }
+					]
+				}
+			}
+		},
+		{
+			"name": "match_p18",
+			"params": [
+				"title_match_item_id"
+			],
+			"template_language": "mustache",
+			"template": {
+				"match": { "weighted_tags": "image.linked.from.wikidata.p18/{{title_match_item_id}}" }
+			}
+		},
+		{
+			"name": "match_p373",
+			"params": [
+				"title_match_item_id"
+			],
+			"template_language": "mustache",
+			"template": {
+				"match": { "weighted_tags": "image.linked.from.wikidata.p373/{{title_match_item_id}}" }
+			}
+		},
+		{
+			"name": "match_sitelink",
+			"params": [
+				"title_match_item_id"
+			],
+			"template_language": "mustache",
+			"template": {
+				"match": { "weighted_tags": "image.linked.from.wikidata.sitelink/{{title_match_item_id}}" }
+			}
+		}
+		]
+	}
+}

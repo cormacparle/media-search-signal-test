@@ -2,3 +2,4 @@
 replica.my.cnf
 vendor/
 .DS_Store
+test_queries/

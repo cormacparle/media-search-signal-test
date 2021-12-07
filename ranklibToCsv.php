@@ -33,21 +33,17 @@ fputcsv(
     [
         'queryId',
         'rating',
-        'descriptions.plain',
         'descriptions',
         'title',
-        'title.plain',
         'category',
-        //'category.plain', NO SUCH FIELD, so the data is meaningless, so ignore
         'redirect.title',
-        'redirect.title.plain',
         'suggest',
-        //'suggest.plain', NO SUCH FIELD, so the data is meaningless, so ignore
         'auxiliary_text',
-        'auxiliary_text.plain',
         'text',
-        'text.plain',
-        'statements'
+        'statements',
+        'p18',
+        'p373',
+        'sitelinks'
     ],
     ","
 );
@@ -69,16 +65,12 @@ foreach ( $randomArrayKeys as $key ) {
                 removeColon( $line[4] ),
                 removeColon( $line[5] ),
                 removeColon( $line[6] ),
-                //$line[7], NO SUCH FIELD
+                removeColon( $line[7] ),
                 removeColon( $line[8] ),
                 removeColon( $line[9] ),
-                removeColon( $line[10] ),
-                //$line[11], NO SUCH FIELD
+                1000 * removeColon( $line[10] ),
+                removeColon( $line[11] ),
                 removeColon( $line[12] ),
-                removeColon( $line[13] ),
-                removeColon( $line[14] ),
-                removeColon( $line[15] ),
-                removeColon( $line[16] ),
             ], "," );
     }
 }

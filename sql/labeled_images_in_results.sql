@@ -27,6 +27,7 @@ create table labeledResult (
   position smallint not null,
   score decimal(10, 5) not null,
   rating tinyint not null,
+  confidence varchar(6) default null,
   primary key (id),
   foreign key (resultsetId) references resultset(id)
 ) engine=innodb;

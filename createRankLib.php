@@ -9,7 +9,7 @@
  *  - the ranklib file will be output to out/$featureSetName.tsv
  */
 
-$featureSetName = 'MediaSearch_20210127';
+$featureSetName = 'MediaSearch_20211206';
 $searchTermsWithEntitiesFile = "out/searchTermsWithEntities.csv";
 
 shell_exec(
@@ -26,7 +26,9 @@ shell_exec(
 shell_exec(
     'php jobs/GenerateRanklibFile.php ' .
     ' --queryDir="out/ltr/" '.
-    ' --featuresetName=' . $featureSetName .
+    ' --featuresetName=' . $featureSetName . '_plain' .
+    ' --stemmedFeaturesetName=' . $featureSetName . '_stemmed' .
+    ' --searchIndex=commonswiki_file' .
     ' --searchTermsWithEntitiesFile="' . $searchTermsWithEntitiesFile . '"'
 );
 

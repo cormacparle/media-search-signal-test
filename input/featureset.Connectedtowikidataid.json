@@ -1,0 +1,51 @@
+{
+	"featureset": {
+		"features": [{
+			"name": "match_statement_p180",
+			"params": ["item_id"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"statement_keywords": "P180={{item_id}}"
+				}
+			}
+		}, {
+			"name": "match_statement_p6243",
+			"params": ["item_id"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"statement_keywords": "P6243={{item_id}}"
+				}
+			}
+		}, {
+			"name": "match_weighted_tags_p18",
+			"params": ["item_id"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"weighted_tags": "image.linked.from.wikidata.p18/{{item_id}}"
+				}
+			}
+		}, {
+			"name": "match_weighted_tags_p373",
+			"params": ["item_id"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"weighted_tags": "image.linked.from.wikidata.p373/{{item_id}}"
+				}
+			}
+		},
+		{
+			"name": "match_weighted_tags_sitelink",
+			"params": ["item_id"],
+			"template_language": "mustache",
+			"template": {
+				"match": {
+					"weighted_tags": "image.linked.from.wikidata.sitelink/{{item_id}}"
+				}
+			}
+		}]
+	}
+}

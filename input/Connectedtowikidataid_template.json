@@ -1,0 +1,38 @@
+{
+	"query": {
+		"bool": {
+			"filter": [
+				{
+					"terms": {
+						"title.keyword": [
+							{{commaSeparatedTitles}}
+						]
+					}
+				},
+				{
+					"terms": {
+						"namespace": [ 6 ]
+					}
+				},
+				{
+					"sltr": {
+						"_name": "logged_features",
+						"featureset": "Connectedtowikidataid",
+						"params": {
+							"item_id": "{{wikidataId}}",
+							"language": "{{language}}"
+						}
+					}
+				}
+			]
+		}
+	},
+	"ext": {
+		"ltr_log": {
+			"log_specs": {
+				"name": "Connectedtowikidataid",
+				"named_query": "logged_features"
+			}
+		}
+	}
+}

@@ -14,7 +14,7 @@ import sys
 
 from pprint import pprint
 
-ranklibFile = 'out/MediaSearch_20210127.tsv'
+ranklibFile = 'out/MediaSearch_20211206.tsv'
 
 trainingDataSize = 0.8
 generateNewCsv = True
@@ -48,7 +48,8 @@ if ( generateNewCsv == True ):
 # load the data from the csv file
 alldata = pd.read_csv( ranklibFile.replace( '.tsv', '.csv' ), header=0 )
 trainingData = alldata[:round(len(alldata)*trainingDataSize)]
-testData = alldata[len(alldata) - 1000:]
+# testData = alldata[len(alldata) - 1000:]
+testData = alldata[len(trainingData):]
 print('Training on the first ' + str(len(trainingData)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
 print('Testing on the last ' + str(len(testData)) + ' rows of ' + ranklibFile.replace( '.tsv', '.csv' ))
 logreg = LogisticRegression(fit_intercept=True, solver='liblinear')
@@ -61,21 +62,18 @@ logreg = LogisticRegression(fit_intercept=True, solver='liblinear')
 y = alldata.loc[:, alldata.columns == 'rating']
 y_train = trainingData.loc[:, trainingData.columns == 'rating']
 y_test = testData.loc[:, testData.columns == 'rating']
-# exclude obviously highly-collinear variables, and use "plain" because not all languages have stemmed fields
 dependent_variable_columns = [
-  #'descriptions.plain',
   'descriptions',
   'title',
-  #'title.plain',
   'category',
   'redirect.title',
-  #'redirect.title.plain',
   'suggest',
   'auxiliary_text',
-  #'auxiliary_text.plain',
   'text',
-  #'text.plain',
-  'statements'
+  'statements',
+  'p18',
+  'p373',
+  'sitelinks'
 ]
 X = alldata.loc[:, dependent_variable_columns]
 X_train = trainingData.loc[:, dependent_variable_columns]
@@ -88,7 +86,7 @@ X_test = testData.loc[:, dependent_variable_columns]
 #
 # Use RFE to reduce the number of dependent variables until we get all positive coefficients
 #
-# Optimise for AVERAGE PRECISION on the test data
+# Optimise for PRECISION@25 on the test data
 
 bestAP = 0
 bestPrecisionAtK = 0
@@ -123,7 +121,7 @@ for i in range(len(dependent_variable_columns), 1, -1):
     precisionatk = sum([1 if l==1 else 0 for l in y_test_sorted_by_score[:k]])/float(k)
 
     averagePrecision = metrics.average_precision_score(y_test, y_pred_p.T[1], average="micro")
-    if (averagePrecision > bestAP):
+    if (precisionatk > bestPrecisionAtK):
         if ((len([x for x in model.coef_[0] if float(x) < 0])) == 0):
             bestPrecisionAtK = precisionatk
             bestAP = averagePrecision
