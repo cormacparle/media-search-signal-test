@@ -1,3 +1,5 @@
+<!--TODO update instructions-->
+<!--TODO display grid-->
 <html>
 <head>
     <title>Image relevance classifier</title>
@@ -37,26 +39,6 @@
             max-height: 600px;
             max-width: 600px;
         }
-        .button {
-            border: 1px solid #374151;
-            padding: 10px 15px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        .positive {
-            background-color: #6EE7B7;
-        }
-        .semi {
-            background-color: #FCD34D;
-        }
-        .negative {
-            background-color: #FCA5A5;
-        }
-        .neutral {
-            background-color: #D1D5DB;
-        }
     </style>
     <template>
         <div class="bulkwarning">
@@ -72,13 +54,6 @@
         <div class="container">
             <div class="column">
                 <p>Is this is a good match for the search term &quot;<span class="term"></span>&quot;?</p>
-
-                <p>
-                    <button class="button positive" name="rating" value="1">Yes</button>
-                    <button class="button semi" name="rating" value="0">Meh</button>
-                    <button class="button negative" name="rating" value="-1">No</button>
-                    <button class="button neutral" name="skip" value="1">Dunno</button>
-                </p>
 
                 <p>
                     <img class="image_url" />
