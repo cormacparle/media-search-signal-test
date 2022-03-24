@@ -3,3 +3,6 @@ replica.my.cnf
 vendor/
 .DS_Store
 test_queries/
+
+# Vi swap files
+*.swp
