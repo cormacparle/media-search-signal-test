@@ -1,17 +1,22 @@
-// TODO make images clickable
+// DONE set rating = 1 when images are clicked
 // TODO add submit button
 // TODO send rating = 1 when images are clicked, else 0
-function appendItem( item, container ) {
-	const thumbnail = document.createElement( 'img' );
-	thumbnail.src = getThumbUrl( item.result );
-	container.appendChild( thumbnail );
-}
-
 function getThumbUrl( title ) {
 	const cleanTitle = title.replace( / /g, '_' );
 	const width = 600;
 
 	return `https://commons.wikimedia.org/w/thumb.php?f=${cleanTitle}&w=${width}`;
+}
+
+function createThumbNail( data ) {
+	const thumb = document.createElement( 'img' );
+	thumb.src = getThumbUrl( data.result );
+	return thumb;
+}
+
+function greyAndRate( img, data ) {
+	img.setAttribute( 'class', 'clicked' );
+	data.rating = 1;
 }
 
 // Get required nodes when the DOM is ready
@@ -40,8 +45,18 @@ fetch( 'fetch_synonyms.php' )
 		const lang = document.createTextNode( results[0].language );
 		langNode.appendChild( lang );
 
-		// Populate image grid.
-		results.forEach( result => appendItem( result, columnNode ) );
+		for (const result of results) {
+			const imgNode = createThumbNail( result );
+
+			// On click, grey out and set `result.rating = 1`.
+			imgNode.addEventListener(
+				'click',
+				() => { greyAndRate( imgNode, result ) }
+			);
+
+			// Populate image grid.
+			columnNode.appendChild( imgNode );
+		}
 
 	})
 	// Handle errors.

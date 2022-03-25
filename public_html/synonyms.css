@@ -7,6 +7,10 @@ img {
 	max-width: 600px;
 }
 
+img.clicked {
+  filter: grayscale(1);
+}
+
 .lang {
 	font-style: italic;
 }
