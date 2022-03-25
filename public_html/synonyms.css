@@ -2,6 +2,26 @@ h2 > a {
 	color: #000;
 }
 
+/* From https://www.w3schools.com/tags/tag_button.asp */
+button {
+	background-color: white;
+	color: black;
+	border: 2px solid #4CAF50;
+	padding: 16px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: #4CAF50;
+	color: white;
+}
+
 img {
 	max-height: 600px;
 	max-width: 600px;
