@@ -1,8 +1,24 @@
-h2 > a {
-	color: #000;
+/* https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_image_grid_responsive */
+* {
+  box-sizing: border-box;
 }
 
-/* From https://www.w3schools.com/tags/tag_button.asp */
+body {
+  margin: 0;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+/* https://www.w3schools.com/howto/howto_css_center_button.asp */
+.center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+/* https://www.w3schools.com/tags/tag_button.asp */
 button {
 	background-color: white;
 	color: black;
@@ -39,7 +55,7 @@ img.clicked {
 	font-style: italic;
 }
 
-/* From https://www.w3schools.com/howto/howto_css_image_grid_responsive.asp */
+/* https://www.w3schools.com/howto/howto_css_image_grid_responsive.asp */
 .row {
 	display: flex;
 	flex-wrap: wrap;
@@ -52,6 +68,7 @@ img.clicked {
 	max-width: 25%;
 	padding: 0 4px;
 }
+
 .column img {
 	margin-top: 8px;
 	vertical-align: middle;
