@@ -25,7 +25,7 @@ try {
 	$maxSearchId = intval( $maxSearchId->fetch_assoc()['search_id'] );
 
 	$result = $mysqli->query(
-		'SELECT search_id, term, result, language
+		'SELECT id, search_id, term, result, language
 		FROM synonyms
 		WHERE rating IS NULL AND search_id = ' . rand( 0, $maxSearchId ) . '
 		ORDER BY id'
