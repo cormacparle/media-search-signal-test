@@ -12,11 +12,10 @@ function getThumbUrl( title ) {
 	return `https://commons.wikimedia.org/w/thumb.php?f=${cleanTitle}&w=${width}`;
 }
 
-// TODO display title on hover
 function createThumbNail( data ) {
 	const thumb = document.createElement( 'img' );
 	thumb.src = getThumbUrl( data.result );
-	thumb.alt = data.result;
+	thumb.title = data.result;
 	return thumb;
 }
 
