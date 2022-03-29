@@ -25,7 +25,6 @@ function greyAndRate( img, data ) {
 	data.rating = 1;
 }
 
-// TODO reload page after submission
 function submit( data ) {
 	// Build actual object to be submitted.
 	const actualRatings = { 0: [], 1: [] };
@@ -49,6 +48,8 @@ function submit( data ) {
 			return response.blob();
 		})
 		.then( results => {
+			// NOTE Comment this to see the request in the console
+			location.reload();
 			console.log( 'Ratings submitted' );
 		})
 		.catch( error => {
