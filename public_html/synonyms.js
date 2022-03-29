@@ -1,5 +1,7 @@
+// TODO add selectable language
+
 /* Global variables */
-let COLUMN_NODE, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, RATINGS;
+let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, RATINGS;
 
 /*
  * Functions
@@ -41,17 +43,14 @@ function submit( data ) {
 
 	fetch( 'submit_synonyms.php', params )
 		.then( response => {
-			// Throw a generic error in case of a non-2xx status.
 			if ( !response.ok ) {
 				throw new Error( `Got HTTP ${ response.status }` );
 			}
 			return response.blob();
 		})
-		// Handle response.
 		.then( results => {
 			console.log( 'Ratings submitted' );
 		})
-		// Handle errors.
 		.catch( error => {
 			console.error( `Something went wrong! ${error}` );
 		})
@@ -62,8 +61,7 @@ function submit( data ) {
  */
 // Get required nodes when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-	// TODO populate 4 columns instead of 1
-	COLUMN_NODE = document.getElementsByClassName( 'column' )[0];
+	COLUMN_NODES = document.getElementsByClassName( 'column' );
 	LANG_NODE = document.getElementsByClassName( 'lang' )[0];
 	TERM_NODE = document.getElementsByClassName( 'term' )[0];
 	SUBMIT_BUTTON = document.querySelector(' button ');
@@ -71,16 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 fetch( 'fetch_synonyms.php' )
-	// Handle HTTP status.
 	.then( response => {
-		// Throw a generic error in case of a non-2xx status.
 		// TODO catch 404 & 500
 		if ( !response.ok ) {
 			throw new Error( `Got HTTP ${ response.status }` );
 		}
 		return response.json();
 	})
-	// Handle response.
 	.then( results => {
 		// Copy `results` to the outer-scope `RATINGS`:
 		// it will be populated after images get clicked.
@@ -92,7 +87,9 @@ fetch( 'fetch_synonyms.php' )
 		const lang = document.createTextNode( results[0].language );
 		LANG_NODE.appendChild( lang );
 
-		for (const result of results) {
+		// Populate images.
+		const imgNodes = [];
+		for ( const result of results ) {
 			const imgNode = createThumbNail( result );
 
 			// On click, grey out and set `result.rating = 1`.
@@ -101,12 +98,27 @@ fetch( 'fetch_synonyms.php' )
 				() => { greyAndRate( imgNode, result ) }
 			);
 
-			// Populate image grid.
-			COLUMN_NODE.appendChild( imgNode );
+			imgNodes.push(imgNode);
+		}
+
+		// Populate grid.
+		// TODO rebuild with K = 12
+		const resultsAmount = results.length;
+		const columnsAmount = COLUMN_NODES.length;
+		const imgsPerColumn = Math.floor( resultsAmount / columnsAmount );
+		const leftOvers = resultsAmount % columnsAmount;
+
+		let sliceStart = 0;
+		for ( const column of COLUMN_NODES ) {
+			const sliceEnd = sliceStart + imgsPerColumn;
+			const imgs = imgNodes.slice( sliceStart, sliceEnd );
+			for ( const img of imgs ) {
+				column.appendChild( img );
+			}
+			sliceStart += imgsPerColumn;
 		}
 
 	})
-	// Handle errors.
 	.catch( error => {
 		console.error( `Something went wrong! ${error}` );
 	})
