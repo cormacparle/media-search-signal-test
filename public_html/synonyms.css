@@ -44,7 +44,7 @@ img {
 }
 
 img.clicked {
-  filter: grayscale(1);
+	border: 8px solid #ff4000;
 }
 
 .lang {
