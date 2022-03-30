@@ -1,7 +1,10 @@
 // TODO add selectable language
+// TODO skip button
+// TODO unclick images
 
 /* Global variables */
 let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, RATINGS;
+let BROKEN_IMAGES = [];
 
 /*
  * Functions
@@ -70,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 fetch( 'fetch_synonyms.php' )
 	.then( response => {
-		// TODO catch 404 & 500
 		if ( !response.ok ) {
 			throw new Error( `Got HTTP ${ response.status }` );
 		}
@@ -92,6 +94,12 @@ fetch( 'fetch_synonyms.php' )
 		for ( const result of results ) {
 			const imgNode = createThumbNail( result );
 
+			// Handle images that fail to load.
+			imgNode.addEventListener( 'error', (event) => {
+				console.log( `Skipping image that failed to load: ${event}` );
+				BROKEN_IMAGES.push( imgNode );
+			});
+
 			// On click, grey out and set `result.rating = 1`.
 			imgNode.addEventListener(
 				'click',
@@ -102,10 +110,10 @@ fetch( 'fetch_synonyms.php' )
 		}
 
 		// Populate grid.
-		// TODO rebuild with K = 12
 		const resultsAmount = results.length;
 		const columnsAmount = COLUMN_NODES.length;
 		const imgsPerColumn = Math.floor( resultsAmount / columnsAmount );
+		// TODO rebuild with K = 12 to minimize leftovers
 		const leftOvers = resultsAmount % columnsAmount;
 
 		let sliceStart = 0;
@@ -121,4 +129,6 @@ fetch( 'fetch_synonyms.php' )
 	})
 	.catch( error => {
 		console.error( `Something went wrong! ${error}` );
-	})
+	});
+
+// TODO loop over BROKEN_IMAGES & remove
