@@ -1,9 +1,8 @@
 // TODO add selectable language
-// TODO skip button
 // TODO unclick images
 
 /* Global variables */
-let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, RATINGS;
+let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, SKIP_BUTTON, RATINGS;
 let BROKEN_IMAGES = [];
 
 /*
@@ -67,8 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	COLUMN_NODES = document.getElementsByClassName( 'column' );
 	LANG_NODE = document.getElementsByClassName( 'lang' )[0];
 	TERM_NODE = document.getElementsByClassName( 'term' )[0];
-	SUBMIT_BUTTON = document.querySelector(' button ');
+	SUBMIT_BUTTON = document.querySelector( 'button.submit' );
 	SUBMIT_BUTTON.addEventListener( 'click', () => { submit( RATINGS ) } );
+	SKIP_BUTTON = document.querySelector( 'button.skip' );
+	SKIP_BUTTON.addEventListener( 'click', () => { location.reload(); } );
 });
 
 fetch( 'fetch_synonyms.php' )
