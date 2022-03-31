@@ -56,8 +56,8 @@ img {
 	border: 1px solid black;
 }
 
-img.clicked {
-	border: 8px solid #4caf50;
+img[clicked] {
+	border: 10px solid #4caf50;
 }
 
 .lang {
