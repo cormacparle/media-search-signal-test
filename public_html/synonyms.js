@@ -3,7 +3,6 @@
 
 /* Global variables */
 let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, SKIP_BUTTON, RATINGS;
-let BROKEN_IMAGES = [];
 
 /*
  * Functions
@@ -101,9 +100,11 @@ fetch( 'fetch_synonyms.php' )
 			const imgNode = createThumbNail( result );
 
 			// Handle images that fail to load.
-			imgNode.addEventListener( 'error', (event) => {
-				console.log( `Skipping image that failed to load: ${event}` );
-				BROKEN_IMAGES.push( imgNode );
+			imgNode.addEventListener( 'error', () => {
+				console.log(
+					`Skipping image that failed to load: ${result.result}`
+				);
+				imgNode.remove();
 			});
 
 			// On click, toggle highlight & rating.
@@ -137,5 +138,3 @@ fetch( 'fetch_synonyms.php' )
 	.catch( error => {
 		console.error( `Something went wrong! ${error}` );
 	});
-
-// TODO loop over BROKEN_IMAGES & remove
