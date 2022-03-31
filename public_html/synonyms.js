@@ -1,7 +1,7 @@
 // TODO add selectable language
 
 /* Global variables */
-let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, SKIP_BUTTON, RATINGS;
+let TERM_NODE, LANG_NODE, SUBMIT_BUTTON, SKIP_BUTTON, DUCKDUCKGO_NODE, COLUMN_NODES, RATINGS;
 
 /*
  * Functions
@@ -66,13 +66,14 @@ function submit( data ) {
  */
 // Get required nodes when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-	COLUMN_NODES = document.getElementsByClassName( 'column' );
-	LANG_NODE = document.getElementsByClassName( 'lang' )[0];
 	TERM_NODE = document.getElementsByClassName( 'term' )[0];
+	LANG_NODE = document.getElementsByClassName( 'lang' )[0];
 	SUBMIT_BUTTON = document.querySelector( 'button.submit' );
 	SUBMIT_BUTTON.addEventListener( 'click', () => { submit( RATINGS ) } );
 	SKIP_BUTTON = document.querySelector( 'button.skip' );
 	SKIP_BUTTON.addEventListener( 'click', () => { location.reload(); } );
+	DUCKDUCKGO_NODE = document.querySelector( 'a.duck' );
+	COLUMN_NODES = document.getElementsByClassName( 'column' );
 });
 
 fetch( 'fetch_synonyms.php' )
@@ -88,10 +89,13 @@ fetch( 'fetch_synonyms.php' )
 		RATINGS = results;
 
 		// Add search term and language code.
-		const term = document.createTextNode( results[0].term );
-		TERM_NODE.appendChild( term );
+		// Always the same, so pick the first ones.
+		const term = results[0].term;
+		const termContent = document.createTextNode( term );
+		TERM_NODE.appendChild( termContent );
 		const lang = document.createTextNode( results[0].language );
 		LANG_NODE.appendChild( lang );
+		DUCKDUCKGO_NODE.href = `https://duckduckgo.com/?ia=images&iax=images&q=${encodeURI( term )}`;
 
 		// Populate images.
 		const imgNodes = [];
@@ -134,10 +138,8 @@ fetch( 'fetch_synonyms.php' )
 		// Populate leftovers.
 		const leftOversAmount = resultsAmount % columnsAmount;
 		if ( leftOversAmount != 0 ) {
-			console.log(leftOversAmount);
 			const leftOvers = imgNodes.slice( -leftOversAmount );
 			for ( i = 0; i < leftOversAmount; i++ ) {
-				console.log('column:', COLUMN_NODES[i], 'img:', leftOvers[i]);
 				COLUMN_NODES[i].appendChild( leftOvers[i] );
 			}
 		}
