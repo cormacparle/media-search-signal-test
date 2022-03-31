@@ -1,14 +1,15 @@
 /* https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_image_grid_responsive */
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 body {
-  margin: 0;
+	margin: 0;
+	font-family: system-ui;
 }
 
 h1, h2 {
-  text-align: center;
+	text-align: center;
 }
 
 /* https://www.w3schools.com/howto/howto_css_center_button.asp */
@@ -26,7 +27,7 @@ button {
 	text-align: center;
 	text-decoration: none;
 	display: inline-block;
-	font-size: 16px;
+	font-size: 18px;
 	margin: 4px 2px;
 	transition-duration: 0.4s;
 	cursor: pointer;
