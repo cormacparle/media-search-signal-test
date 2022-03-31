@@ -21,9 +21,14 @@ function createThumbNail( data ) {
 	return thumb;
 }
 
-function greyAndRate( img, data ) {
-	img.setAttribute( 'class', 'clicked' );
-	data.rating = 1;
+function toggle( img, data ) {
+	img.toggleAttribute( 'clicked' );
+	// First click: add rating
+	if ( !data.hasOwnProperty( 'rating' ) ) {
+		data.rating = 1;
+	} else {  // Already clicked: toggle rating
+		data.rating = data.rating == 1 ? 0 : 1;
+	}
 }
 
 function submit( data ) {
@@ -50,7 +55,7 @@ function submit( data ) {
 		})
 		.then( results => {
 			// NOTE Comment this to see the request in the console
-			location.reload();
+			//location.reload();
 			console.log( 'Ratings submitted' );
 		})
 		.catch( error => {
@@ -101,10 +106,10 @@ fetch( 'fetch_synonyms.php' )
 				BROKEN_IMAGES.push( imgNode );
 			});
 
-			// On click, grey out and set `result.rating = 1`.
+			// On click, toggle highlight & rating.
 			imgNode.addEventListener(
 				'click',
-				() => { greyAndRate( imgNode, result ) }
+				() => { toggle( imgNode, result ) }
 			);
 
 			imgNodes.push(imgNode);
@@ -115,6 +120,7 @@ fetch( 'fetch_synonyms.php' )
 		const columnsAmount = COLUMN_NODES.length;
 		const imgsPerColumn = Math.floor( resultsAmount / columnsAmount );
 		// TODO rebuild with K = 12 to minimize leftovers
+		// FIXME consume leftovers anyway!
 		const leftOvers = resultsAmount % columnsAmount;
 
 		let sliceStart = 0;
