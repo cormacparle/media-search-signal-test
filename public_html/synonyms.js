@@ -1,5 +1,4 @@
 // TODO add selectable language
-// TODO unclick images
 
 /* Global variables */
 let COLUMN_NODES, LANG_NODE, TERM_NODE, SUBMIT_BUTTON, SKIP_BUTTON, RATINGS;
@@ -101,7 +100,7 @@ fetch( 'fetch_synonyms.php' )
 
 			// Handle images that fail to load.
 			imgNode.addEventListener( 'error', () => {
-				console.log(
+				console.warn(
 					`Skipping image that failed to load: ${result.result}`
 				);
 				imgNode.remove();
@@ -120,18 +119,27 @@ fetch( 'fetch_synonyms.php' )
 		const resultsAmount = results.length;
 		const columnsAmount = COLUMN_NODES.length;
 		const imgsPerColumn = Math.floor( resultsAmount / columnsAmount );
-		// TODO rebuild with K = 12 to minimize leftovers
-		// FIXME consume leftovers anyway!
-		const leftOvers = resultsAmount % columnsAmount;
 
 		let sliceStart = 0;
 		for ( const column of COLUMN_NODES ) {
 			const sliceEnd = sliceStart + imgsPerColumn;
-			const imgs = imgNodes.slice( sliceStart, sliceEnd );
-			for ( const img of imgs ) {
+			const slice = imgNodes.slice( sliceStart, sliceEnd );
+			for ( const img of slice ) {
 				column.appendChild( img );
 			}
 			sliceStart += imgsPerColumn;
+		}
+
+		// TODO rebuild with K = 12 to minimize leftovers
+		// Populate leftovers.
+		const leftOversAmount = resultsAmount % columnsAmount;
+		if ( leftOversAmount != 0 ) {
+			console.log(leftOversAmount);
+			const leftOvers = imgNodes.slice( -leftOversAmount );
+			for ( i = 0; i < leftOversAmount; i++ ) {
+				console.log('column:', COLUMN_NODES[i], 'img:', leftOvers[i]);
+				COLUMN_NODES[i].appendChild( leftOvers[i] );
+			}
 		}
 
 	})
