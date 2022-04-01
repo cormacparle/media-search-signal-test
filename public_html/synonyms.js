@@ -51,7 +51,7 @@ function submit( data ) {
 		})
 		.then( results => {
 			// NOTE Comment this to see the request in the console
-			//location.reload();
+			location.reload();
 			console.log( 'Ratings submitted' );
 		})
 		.catch( error => {
