@@ -107,6 +107,8 @@ fetch( 'fetch_synonyms.php' )
 				console.warn(
 					`Skipping image that failed to load: ${result.result}`
 				);
+				// Don't rate.
+				RATINGS.splice(RATINGS.indexOf( result ), 1);
 				imgNode.remove();
 			});
 
