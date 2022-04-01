@@ -1,3 +1,9 @@
+// NOTE Consider the following improvements:
+//      - language selector
+//      - prepare for more judgments per image to enable agreement
+//      - ask for confirmation in case of accidental submission,
+//        i.e., check if all ratings are 0
+
 /* Global variables */
 let TERM_NODE, LANG_NODE, SUBMIT_BUTTON, SKIP_BUTTON, DUCKDUCKGO_NODE, ROW_NODES, RATINGS;
 
