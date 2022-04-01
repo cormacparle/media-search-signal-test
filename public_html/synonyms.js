@@ -1,7 +1,5 @@
-// TODO add selectable language
-
 /* Global variables */
-let TERM_NODE, LANG_NODE, SUBMIT_BUTTON, SKIP_BUTTON, DUCKDUCKGO_NODE, COLUMN_NODES, RATINGS;
+let TERM_NODE, LANG_NODE, SUBMIT_BUTTON, SKIP_BUTTON, DUCKDUCKGO_NODE, ROW_NODES, RATINGS;
 
 /*
  * Functions
@@ -73,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	SKIP_BUTTON = document.querySelector( 'button.skip' );
 	SKIP_BUTTON.addEventListener( 'click', () => { location.reload(); } );
 	DUCKDUCKGO_NODE = document.querySelector( 'a.duck' );
-	COLUMN_NODES = document.getElementsByClassName( 'column' );
+	ROW_NODES = document.getElementsByClassName( 'row' );
 });
 
 fetch( 'fetch_synonyms.php' )
@@ -123,26 +121,25 @@ fetch( 'fetch_synonyms.php' )
 
 		// Populate grid.
 		const resultsAmount = results.length;
-		const columnsAmount = COLUMN_NODES.length;
-		const imgsPerColumn = Math.floor( resultsAmount / columnsAmount );
+		const rowsAmount = ROW_NODES.length;
+		const imgsPerRow = Math.floor( resultsAmount / rowsAmount );
 
 		let sliceStart = 0;
-		for ( const column of COLUMN_NODES ) {
-			const sliceEnd = sliceStart + imgsPerColumn;
+		for ( const row of ROW_NODES ) {
+			const sliceEnd = sliceStart + imgsPerRow;
 			const slice = imgNodes.slice( sliceStart, sliceEnd );
 			for ( const img of slice ) {
-				column.appendChild( img );
+				row.appendChild( img );
 			}
-			sliceStart += imgsPerColumn;
+			sliceStart += imgsPerRow;
 		}
 
-		// TODO rebuild with K = 12 to minimize leftovers
 		// Populate leftovers.
-		const leftOversAmount = resultsAmount % columnsAmount;
+		const leftOversAmount = resultsAmount % rowsAmount;
 		if ( leftOversAmount != 0 ) {
 			const leftOvers = imgNodes.slice( -leftOversAmount );
 			for ( i = 0; i < leftOversAmount; i++ ) {
-				COLUMN_NODES[i].appendChild( leftOvers[i] );
+				ROW_NODES[i].appendChild( leftOvers[i] );
 			}
 		}
 
