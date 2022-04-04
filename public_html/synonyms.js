@@ -3,6 +3,8 @@
 //      - prepare for more judgments per image to enable agreement
 //      - ask for confirmation in case of accidental submission,
 //        i.e., check if all ratings are 0
+//      - open DuckDuckGo in a new tab
+//      - map language codes to human-readable languages
 
 /* Global variables */
 let TERM_NODE, LANG_NODE, SUBMIT_BUTTON, SKIP_BUTTON, DUCKDUCKGO_NODE, ROW_NODES, RATINGS;
